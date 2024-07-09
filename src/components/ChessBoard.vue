@@ -2,15 +2,15 @@
   <div class="chess-board-container">
     <div class="board-with-rows">
       <div class="row-labels">
-        <div v-for="(rowLabel, index) in rowLabels" :key="index" class="row-label">
+        <div v-for="(rowLabel, index) in displayedRowLabels" :key="index" class="row-label">
           {{ rowLabel }}
         </div>
       </div>
       <div class="chess-board">
-        <div v-for="(row, rowIndex) in board" :key="rowIndex" class="row">
+        <div v-for="(row, rowIndex) in displayedBoard" :key="rowIndex" class="row">
           <div v-for="(square, colIndex) in row" :key="colIndex" class="square" :class="getSquareColor(rowIndex, colIndex)"
-               @dragover.prevent @drop="handleDrop($event, rowIndex, colIndex)">
-            <div v-if="square" class="piece" :draggable="true" @dragstart="handleDragStart($event, rowIndex, colIndex)">
+          @click="handleSquareClick(rowIndex, colIndex)">
+            <div v-if="square" class="piece" :class="{ selected: isSelected(rowIndex, colIndex) }">
               <ChessPiece :piece="square"/>
             </div>
           </div>
@@ -18,7 +18,7 @@
       </div>
     </div>
     <div class="column-labels">
-      <div v-for="(colLabel, index) in columnLabels" :key="index" class="column-label">
+      <div v-for="(colLabel, index) in displayedColumnLabels" :key="index" class="column-label">
         {{ colLabel }}
       </div>
     </div>
@@ -35,18 +35,33 @@ export default defineComponent({
   components: {
     ChessPiece
   },
-  props: ['fen'],
+  props: {
+    fen: String,
+    flipped: Boolean
+  },
   data() {
     return {
       chess: new Chess(),
       board: Array(8).fill(null).map(() => Array(8).fill(null)),
+      selectedPiece: null,  // Store the selected piece
       columnLabels: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
-      rowLabels: ['8', '7', '6', '5', '4', '3', '2', '1'],
+      rowLabels: ['1', '2', '3', '4', '5', '6', '7', '8'],
       draggedPiece: null
     };
   },
+  computed: {
+    displayedBoard() {
+      return this.flipped ? this.board.slice().reverse().map(row => row.slice().reverse()) : this.board;
+    },
+    displayedRowLabels() {
+      return this.flipped ? this.rowLabels.slice().reverse() : this.rowLabels;
+    },
+    displayedColumnLabels() {
+      return this.flipped ? this.columnLabels.slice().reverse() : this.columnLabels;
+    }
+  },
   mounted() {
-    this.updateBoard(fen);
+    this.updateBoard(this.fen);
   },
   methods: {
     updateBoard(fen) {
@@ -66,7 +81,9 @@ export default defineComponent({
       return (row + col) % 2 === 0 ? 'white' : 'black';
     },
     getCoordinates(row, col) {
-      return this.columnLabels[col] + this.rowLabels[row];
+      const rowLabel = this.rowLabels[7 - col];
+      const colLabel = this.columnLabels[row];
+      return colLabel + rowLabel;
     },
     handleDragStart(event, row, col) {
       this.draggedPiece = { row, col };
@@ -81,7 +98,29 @@ export default defineComponent({
         this.updateBoard(this.chess.fen());
         this.$emit('move', this.chess.fen());
       }
+    },
+    handleSquareClick(rowIndex, colIndex) {
+    if (this.selectedPiece) {
+      this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+      this.selectedPiece = null;  // Deselect after moving
+    } else if (this.board[rowIndex][colIndex]) {
+      this.selectedPiece = { row: rowIndex, col: colIndex };  // Select the piece
     }
+    },
+    movePiece(fromRow, fromCol, toRow, toCol) {
+    const from = this.getCoordinates(fromRow, fromCol);
+    const to = this.getCoordinates(toRow, toCol);
+    const move = this.chess.move({ from, to });
+    if (move) {
+      this.updateBoard(this.chess.fen());
+      this.$emit('move', this.chess.fen());
+    } else {
+      this.selectedPiece = null;  // Deselect if move is invalid
+    }
+  },
+  isSelected(row, col) {
+    return this.selectedPiece && this.selectedPiece.row === row && this.selectedPiece.col === col;
+  },
   },
   watch: {
     fen(newFen) {
@@ -172,6 +211,11 @@ export default defineComponent({
   font-family: Arial, Helvetica, sans-serif;
   font-size: 15px;
 }
+
+.selected {
+  box-shadow: 0 0 10px 3px #ff0; /* Highlight with a yellow glow */
+}
+
 </style>
 
 

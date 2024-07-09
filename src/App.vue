@@ -1,59 +1,52 @@
 <template>
   <div class="container">
     <div>
-      <ChessBoard :fen="currentFen"/>
-    <div>
+      <ChessBoard :fen="currentFen" :flipped="flipped"/>
       <FenBoard @update-fen="handleUpdateFen"/>
-    <PgnBoard/>
     </div>
-    <div>
-      <FrameBoard/>
-    </div>
-    </div>
-  
+    <FrameBoard @flip="flipBoard"/>
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from 'vue';
 
 import ChessBoard from './components/ChessBoard.vue';
-import FenBoard from './components/FenBoard.vue'
-import PgnBoard from './components/PgnBoard.vue'
-import FrameBoard from './components/FrameBoard.vue'
+import FenBoard from './components/FenBoard.vue';
+import FrameBoard from './components/FrameBoard.vue';
 
-
-export default {
+export default defineComponent({
   name: 'App',
   components: {
     ChessBoard,
     FenBoard,
-    PgnBoard,
     FrameBoard
   },
   data() {
     return {
-      currentFen:''
-
+      currentFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', // FEN initial
+      flipped: false
     };
   },
   methods: {
-    handleUpdateFen(fen: string){
+    handleUpdateFen(fen) {
       this.currentFen = fen;
+    },
+    flipBoard() {
+      this.flipped = !this.flipped;
     }
-
   }
-};
+});
 </script>
-<style scoped>
 
+<style scoped>
 .container {
   text-align: center;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   margin-top: 40px;
 }
 </style>
+
 

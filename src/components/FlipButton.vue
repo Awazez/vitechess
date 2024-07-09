@@ -1,7 +1,5 @@
 <template>
-    <div class="container">
     <img :src="img" @click="flipBoard" class="flip-icon">
-    </div>
   </template>
   
   <script>
@@ -26,14 +24,5 @@
     cursor: pointer;
     width: 40px;
     height: 40px;
-  }
-
-  .container {
-    width: 400px;
-    height: 620px;
-    background: white;
-    border-radius: 15px;
-    margin-bottom: 145px;
-
   }
   </style>

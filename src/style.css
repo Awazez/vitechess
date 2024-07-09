@@ -5,12 +5,12 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: white;
+  background-color: #f9f8f9;
   display: flex;
   align-items: center;
   justify-content: center;
-  --black-color:#4c946a;
-  --white-color:#e0ddcc;
+  --black-color:#c5a076;
+  --white-color:#ecdab9;
   --bg-color:white;
 
   font-synthesis: none;
