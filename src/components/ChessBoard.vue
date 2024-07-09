@@ -8,11 +8,14 @@
       </div>
       <div class="chess-board">
         <div v-for="(row, rowIndex) in displayedBoard" :key="rowIndex" class="row">
-          <div v-for="(square, colIndex) in row" :key="colIndex" class="square" :class="getSquareColor(rowIndex, colIndex)"
-          @click="handleSquareClick(rowIndex, colIndex)">
-            <div v-if="square" class="piece" :class="{ selected: isSelected(rowIndex, colIndex) }">
+          <div v-for="(square, colIndex) in row" :key="colIndex" 
+               class="square" 
+               :class="[getSquareColor(rowIndex, colIndex), { selected: isSelected(rowIndex, colIndex), 'possible-move': isPossibleMove(rowIndex, colIndex) }]"
+               @click="handleSquareClick(rowIndex, colIndex)">
+            <div v-if="square" class="piece">
               <ChessPiece :piece="square"/>
             </div>
+            <div v-if="isPossibleMove(rowIndex, colIndex)" class="move-point"></div>
           </div>
         </div>
       </div>
@@ -36,28 +39,27 @@ export default defineComponent({
     ChessPiece
   },
   props: {
-    fen: String,
-    flipped: Boolean
+    fen: String
   },
   data() {
     return {
       chess: new Chess(),
       board: Array(8).fill(null).map(() => Array(8).fill(null)),
-      selectedPiece: null,  // Store the selected piece
+      selectedPiece: null,
+      possibleMoves: [],
       columnLabels: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
-      rowLabels: ['1', '2', '3', '4', '5', '6', '7', '8'],
-      draggedPiece: null
+      rowLabels: ['1', '2', '3', '4', '5', '6', '7', '8']
     };
   },
   computed: {
     displayedBoard() {
-      return this.flipped ? this.board.slice().reverse().map(row => row.slice().reverse()) : this.board;
+      return this.board;
     },
     displayedRowLabels() {
-      return this.flipped ? this.rowLabels.slice().reverse() : this.rowLabels;
+      return this.rowLabels.slice().reverse();
     },
     displayedColumnLabels() {
-      return this.flipped ? this.columnLabels.slice().reverse() : this.columnLabels;
+      return this.columnLabels;
     }
   },
   mounted() {
@@ -81,46 +83,54 @@ export default defineComponent({
       return (row + col) % 2 === 0 ? 'white' : 'black';
     },
     getCoordinates(row, col) {
-      const rowLabel = this.rowLabels[7 - col];
+      // Correctly compute the coordinates based on the row and column labels
+      const rowLabel = this.rowLabels[7 - col]; // Adjust if your row labels are reversed
       const colLabel = this.columnLabels[row];
       return colLabel + rowLabel;
-    },
-    handleDragStart(event, row, col) {
-      this.draggedPiece = { row, col };
-    },
-    handleDrop(event, row, col) {
-      const { row: fromRow, col: fromCol } = this.draggedPiece;
-      const from = this.getCoordinates(fromRow, fromCol);
-      const to = this.getCoordinates(row, col);
-      const move = this.chess.move({ from, to });
+  },
 
+    handleSquareClick(rowIndex, colIndex) {
+      if (this.selectedPiece) {
+        this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+        this.selectedPiece = null;
+        this.possibleMoves = [];
+      } else if (this.board[rowIndex][colIndex]) {
+        this.selectedPiece = { row: rowIndex, col: colIndex };
+        this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+      }
+    },
+    movePiece(fromRow, fromCol, toRow, toCol) {
+      const from = this.getCoordinates(fromRow, fromCol);
+      const to = this.getCoordinates(toRow, toCol);
+      const move = this.chess.move({ from, to });
       if (move) {
         this.updateBoard(this.chess.fen());
         this.$emit('move', this.chess.fen());
+      } else {
+        this.selectedPiece = null;
       }
     },
-    handleSquareClick(rowIndex, colIndex) {
-    if (this.selectedPiece) {
-      this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
-      this.selectedPiece = null;  // Deselect after moving
-    } else if (this.board[rowIndex][colIndex]) {
-      this.selectedPiece = { row: rowIndex, col: colIndex };  // Select the piece
-    }
+    isSelected(row, col) {
+      return this.selectedPiece && this.selectedPiece.row === row && this.selectedPiece.col === col;
     },
-    movePiece(fromRow, fromCol, toRow, toCol) {
-    const from = this.getCoordinates(fromRow, fromCol);
-    const to = this.getCoordinates(toRow, toCol);
-    const move = this.chess.move({ from, to });
-    if (move) {
-      this.updateBoard(this.chess.fen());
-      this.$emit('move', this.chess.fen());
-    } else {
-      this.selectedPiece = null;  // Deselect if move is invalid
+    getPossibleMoves(row, col) {
+  const square = this.getCoordinates(row, col);
+  console.log(`Getting moves for square: ${square}`);
+
+  const possibleMoves = this.chess.moves({ square, verbose: true });
+
+  return possibleMoves.map(move => {
+    // Convert 'a'-'h' to 0-7
+    const toRow = move.to.charCodeAt(0) - 'a'.charCodeAt(0);
+    // Convert '1'-'8' to 0-7 by reversing the rank
+    const toCol = 8 - parseInt(move.to.charAt(1)); // Correctly map the row
+    console.log(`Mapping move ${move.to} to indices row: ${toRow}, col: ${toCol}`);
+    return { row: toRow, col: toCol };
+  });
+},
+    isPossibleMove(row, col) {
+      return this.possibleMoves.some(move => move.row === row && move.col === col);
     }
-  },
-  isSelected(row, col) {
-    return this.selectedPiece && this.selectedPiece.row === row && this.selectedPiece.col === col;
-  },
   },
   watch: {
     fen(newFen) {
@@ -213,10 +223,24 @@ export default defineComponent({
 }
 
 .selected {
-  box-shadow: 0 0 10px 3px #ff0; /* Highlight with a yellow glow */
+  background-color: yellow !important;
+}
+
+.possible-move {
+  position: relative;
+}
+
+.move-point {
+  width: 15px;
+  height: 15px;
+  background-color: yellow;
+  border-radius: 50%;
+  position: absolute;
 }
 
 </style>
+
+
 
 
 

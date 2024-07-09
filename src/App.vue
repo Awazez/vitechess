@@ -1,16 +1,15 @@
 <template>
   <div class="container">
     <div>
-      <ChessBoard :fen="currentFen" :flipped="flipped"/>
-      <FenBoard @update-fen="handleUpdateFen"/>
+      <ChessBoard :fen="currentFen" :flipped="flipped" />
+      <FenBoard @update-fen="handleUpdateFen" />
     </div>
-    <FrameBoard @flip="flipBoard"/>
+    <FrameBoard @flip="flipBoard" />
   </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue';
-
 import ChessBoard from './components/ChessBoard.vue';
 import FenBoard from './components/FenBoard.vue';
 import FrameBoard from './components/FrameBoard.vue';
@@ -48,5 +47,6 @@ export default defineComponent({
   margin-top: 40px;
 }
 </style>
+
 
 
