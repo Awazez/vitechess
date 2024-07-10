@@ -9,9 +9,12 @@
       <div class="chess-board">
         <div v-for="(row, rowIndex) in displayedBoard" :key="rowIndex" class="row">
           <div v-for="(square, colIndex) in row" :key="colIndex" 
-               class="square" 
-               :class="[getSquareColor(rowIndex, colIndex), { selected: isSelected(rowIndex, colIndex), 'possible-move': isPossibleMove(rowIndex, colIndex) }]"
-               @click="handleSquareClick(rowIndex, colIndex)">
+              class="square"
+              :class="[getSquareColor(rowIndex, colIndex), 
+                { 'selected': isSelected(rowIndex, colIndex), 
+                  'possible-move': isPossibleMove(rowIndex, colIndex), 
+                  'king-check': isKingInCheck(rowIndex, colIndex) }]"
+              @click="handleSquareClick(rowIndex, colIndex)">
             <div v-if="square" class="piece">
               <chessPiece :piece="square"/>
             </div>
@@ -48,7 +51,9 @@ export default defineComponent({
       selectedPiece: null,
       possibleMoves: [],
       columnLabels: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
-      rowLabels: ['1', '2', '3', '4', '5', '6', '7', '8']
+      rowLabels: ['1', '2', '3', '4', '5', '6', '7', '8'],
+      lastMoveStart: null,
+      lastMoveEnd: null 
     };
   },
   computed: {
@@ -141,7 +146,27 @@ export default defineComponent({
 },
     isPossibleMove(row, col) {
       return this.possibleMoves.some(move => move.row === row && move.col === col);
+    },
+    isKingInCheck(rowIndex, colIndex) {
+    // First, find the current position of the king for the player who's turn it is
+    const kingPosition = this.findKingPosition(this.chess.turn());
+    // Check if the current square has the king and then check if it's in check
+    if (kingPosition && kingPosition.row === rowIndex && kingPosition.col === colIndex) {
+      return this.chess.inCheck();
     }
+    return false;
+  }, findKingPosition(color) {
+    const board = this.chess.board();
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        const piece = board[j][i];
+        if (piece && piece.type === 'k' && piece.color === color) {
+          return { row: i, col: j };
+        }
+      }
+    }
+    return null; // If no king found, return null
+  }
   },
   watch: {
     fen(newFen) {
@@ -249,7 +274,9 @@ export default defineComponent({
   position: absolute;
 }
 
-
+.king-check {
+  background-color: rgb(247, 112, 112); /* Adjust the color to fit your design */
+}
 
 </style>
 
