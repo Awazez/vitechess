@@ -9,8 +9,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  --black-color:#c5a076;
-  --white-color:#ecdab9;
+  --black-color:#4c946a;
+  --white-color:#e0ddcc;
+  --move-color:#FFED8C;
+  --selected-color:#E0FFFF;
+  --check-color:#FF8E8E;
   --bg-color:white;
 
   font-synthesis: none;
