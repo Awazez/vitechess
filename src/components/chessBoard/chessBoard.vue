@@ -13,7 +13,7 @@
                :class="[getSquareColor(rowIndex, colIndex), { selected: isSelected(rowIndex, colIndex), 'possible-move': isPossibleMove(rowIndex, colIndex) }]"
                @click="handleSquareClick(rowIndex, colIndex)">
             <div v-if="square" class="piece">
-              <ChessPiece :piece="square"/>
+              <chessPiece :piece="square"/>
             </div>
             <div v-if="isPossibleMove(rowIndex, colIndex)" class="move-point"></div>
           </div>
@@ -30,13 +30,13 @@
 
 <script>
 import { defineComponent, watch } from 'vue';
-import ChessPiece from './ChessPiece.vue';
+import chessPiece from './chessPiece.vue';
 import { Chess } from 'chess.js';
 
 export default defineComponent({
   name: 'ChessBoard',
   components: {
-    ChessPiece
+    chessPiece
   },
   props: {
     fen: String
