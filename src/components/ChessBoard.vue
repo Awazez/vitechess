@@ -89,16 +89,27 @@ export default defineComponent({
       return colLabel + rowLabel;
   },
 
-    handleSquareClick(rowIndex, colIndex) {
-      if (this.selectedPiece) {
-        this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
-        this.selectedPiece = null;
-        this.possibleMoves = [];
-      } else if (this.board[rowIndex][colIndex]) {
-        this.selectedPiece = { row: rowIndex, col: colIndex };
-        this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
-      }
-    },
+  handleSquareClick(rowIndex, colIndex) {
+  const piece = this.board[rowIndex][colIndex];
+  const currentTurn = this.chess.turn() === 'w' ? 'w' : 'b';
+
+  if (this.selectedPiece) {
+    if (piece && piece[0] === currentTurn) {
+      // If clicking on another piece of the current player, update the selected piece
+      this.selectedPiece = { row: rowIndex, col: colIndex };
+      this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+    } else {
+      // Otherwise, try to move the selected piece
+      this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+      this.selectedPiece = null;
+      this.possibleMoves = [];
+    }
+  } else if (piece && piece[0] === currentTurn) {
+    // If no piece is selected and the clicked piece belongs to the current player, select it
+    this.selectedPiece = { row: rowIndex, col: colIndex };
+    this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+  }
+},
     movePiece(fromRow, fromCol, toRow, toCol) {
       const from = this.getCoordinates(fromRow, fromCol);
       const to = this.getCoordinates(toRow, toCol);
@@ -223,7 +234,7 @@ export default defineComponent({
 }
 
 .selected {
-  background-color: yellow !important;
+  background-color: #b995fb !important;
 }
 
 .possible-move {
@@ -233,10 +244,12 @@ export default defineComponent({
 .move-point {
   width: 15px;
   height: 15px;
-  background-color: yellow;
+  background-color: #b995fb;
   border-radius: 50%;
   position: absolute;
 }
+
+
 
 </style>
 
