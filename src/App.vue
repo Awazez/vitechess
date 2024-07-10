@@ -10,7 +10,7 @@
 
 <script>
 import { defineComponent } from 'vue';
-import ChessBoard from './components/ChessBoard.vue';
+import ChessBoard from './components/chessBoard/chessBoard.vue';
 import FenBoard from './components/FenBoard.vue';
 import FrameBoard from './components/FrameBoard.vue';
 
