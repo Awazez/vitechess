@@ -13,7 +13,8 @@
               :class="[getSquareColor(rowIndex, colIndex), 
                 { 'selected': isSelected(rowIndex, colIndex), 
                   'possible-move': isPossibleMove(rowIndex, colIndex), 
-                  'king-check': isKingInCheck(rowIndex, colIndex) }]"
+                  'king-check': isKingInCheck(rowIndex, colIndex),
+                  'last-move': isLastMove(rowIndex, colIndex) }]" 
               @click="handleSquareClick(rowIndex, colIndex)">
             <div v-if="square" class="piece">
               <chessPiece :piece="square"/>
@@ -120,6 +121,8 @@ export default defineComponent({
       const to = this.getCoordinates(toRow, toCol);
       const move = this.chess.move({ from, to });
       if (move) {
+        this.lastMoveStart = { row: fromRow, col: fromCol }; 		
+        this.lastMoveEnd = { row: toRow, col: toCol }; 
         this.updateBoard(this.chess.fen());
         this.$emit('move', this.chess.fen());
       } else {
@@ -155,7 +158,8 @@ export default defineComponent({
       return this.chess.inCheck();
     }
     return false;
-  }, findKingPosition(color) {
+  }, 
+  findKingPosition(color) {
     const board = this.chess.board();
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
@@ -166,7 +170,11 @@ export default defineComponent({
       }
     }
     return null; // If no king found, return null
-  }
+  },
+  isLastMove(row, col) {
+  return (this.lastMoveStart && this.lastMoveStart.row === row && this.lastMoveStart.col === col) ||
+         (this.lastMoveEnd && this.lastMoveEnd.row === row && this.lastMoveEnd.col === col);
+},
   },
   watch: {
     fen(newFen) {
@@ -259,7 +267,7 @@ export default defineComponent({
 }
 
 .selected {
-  background-color: #b995fb !important;
+  background-color:var(--selected-color) !important;
 }
 
 .possible-move {
@@ -269,13 +277,17 @@ export default defineComponent({
 .move-point {
   width: 15px;
   height: 15px;
-  background-color: #b995fb;
+  background-color: var(--selected-color);
   border-radius: 50%;
   position: absolute;
 }
 
 .king-check {
-  background-color: rgb(247, 112, 112); /* Adjust the color to fit your design */
+  background-color: var(--check-color); /* Adjust the color to fit your design */
+}
+
+.last-move {
+  background-color: var(--move-color);
 }
 
 </style>
