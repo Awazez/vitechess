@@ -3,7 +3,7 @@
   <img :src="pieceImage" class="chess-piece" />
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from 'vue';
 
 import bB from '../assets/pieces/cburnett/bB.svg';
