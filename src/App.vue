@@ -1,13 +1,12 @@
 <template>
   <div class="container">
     <div>
-      <ChessBoard :fen="currentFen" :flipped="flipped" />
-      <FenBoard @update-fen="handleUpdateFen" />
+      <ChessBoard @fen="handleUpdateFen" :fen="currentFen" :flipped="flipped" @move="handleMove"/>
+      <FenBoard @update-fen="handleUpdateFen" :fen="currentFen" />
     </div>
-    <FrameBoard @flip="flipBoard" />
+    <FrameBoard :moves="moves" @flip="flipBoard"/>
   </div>
 </template>
-
 <script>
 import { defineComponent } from 'vue';
 import ChessBoard from './components/chessBoard/chessBoard.vue';
@@ -24,7 +23,9 @@ export default defineComponent({
   data() {
     return {
       currentFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', // FEN initial
-      flipped: false
+      flipped: false,
+      fen: [],
+      moves: []
     };
   },
   methods: {
@@ -33,7 +34,11 @@ export default defineComponent({
     },
     flipBoard() {
       this.flipped = !this.flipped;
-    }
+    },
+    handleMove(move) {
+    this.moves.push(move);
+    console.log(move);
+  }
   }
 });
 </script>

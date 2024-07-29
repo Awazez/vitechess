@@ -9,10 +9,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  --black-color:#4c946a;
-  --white-color:#e0ddcc;
+  --black-color:#957ab1;
+  --white-color:#e0d5eb;
   --move-color:#FFED8C;
-  --selected-color:#E0FFFF;
+  --selected-color:#6ef9ac;
   --check-color:#FF8E8E;
   --bg-color:white;
 

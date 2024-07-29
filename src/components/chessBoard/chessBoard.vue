@@ -124,7 +124,8 @@ export default defineComponent({
         this.lastMoveStart = { row: fromRow, col: fromCol }; 		
         this.lastMoveEnd = { row: toRow, col: toCol }; 
         this.updateBoard(this.chess.fen());
-        this.$emit('move', this.chess.fen());
+        this.$emit('move', move.san); // Emit the move event here
+        this.$emit('fen', this.chess.fen());
       } else {
         this.selectedPiece = null;
       }
@@ -196,6 +197,7 @@ export default defineComponent({
   border-radius: 15px;
   padding-top: 15px;
   padding-right: 15px;
+  
 }
 
 .board-with-rows {
@@ -275,9 +277,10 @@ export default defineComponent({
 }
 
 .move-point {
-  width: 15px;
-  height: 15px;
-  background-color: var(--selected-color);
+  width: 20px;
+  height: 20px;
+  background-color: black;
+  opacity: 25%;
   border-radius: 50%;
   position: absolute;
 }

@@ -3,26 +3,14 @@
         <label class="fen-label" for="fen-input">
             FEN
         </label>
-        <input v-model="fen" @input="updateFen" class="fen-input" >
+        <input :value="fen" @input="$emit('update-fen', $event.target.value)" class="fen-input" >
     </div>
 </template>
 
 <script>
 export default {
-    data() {
-        return {
-            fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-        };
-    },
-    mounted() {
-        this.updateFen();  // Emit initial value after DOM is ready
-    },
-    methods: {
-        updateFen() {
-            this.$emit('update-fen', this.fen);
-            console.log(this.fen);
-        }
-    }
+    props: ['fen'],
+    emits: ['update-fen'],
 }
 </script>
 
@@ -33,7 +21,7 @@ input {
     border-radius: 15px;
     border: none;
     margin-left: 10px;
-    width: 90%;
+    width: 100%;
     height: 30px;
     font-size: 15px;
     color: black;
