@@ -30,6 +30,8 @@
       </div>
     </div>
   </div>
+  <audio ref="moveSound" src="/move-self.mp3"></audio>
+  <audio ref="captureSound" src="/capture.mp3"></audio>
 </template>
 
 <script>
@@ -85,6 +87,18 @@ export default defineComponent({
       });
       this.board = newBoard;
     },
+    playMoveSound() {
+      const moveSound = this.$refs.moveSound;
+      if (moveSound) {
+        moveSound.play();
+      }
+    },
+    playCaptureSound() {
+      const captureSound = this.$refs.captureSound;
+      if (captureSound) {
+        captureSound.play();
+      }
+    },
     getSquareColor(row, col) {
       return (row + col) % 2 === 0 ? 'white' : 'black';
     },
@@ -122,7 +136,12 @@ export default defineComponent({
       const move = this.chess.move({ from, to });
       if (move) {
         this.lastMoveStart = { row: fromRow, col: fromCol }; 		
-        this.lastMoveEnd = { row: toRow, col: toCol }; 
+        this.lastMoveEnd = { row: toRow, col: toCol };
+        if (move.flags.includes('c')) {
+          this.playCaptureSound(); // Play capture sound
+        } else {
+          this.playMoveSound(); // Play move sound
+        }
         this.updateBoard(this.chess.fen());
         this.$emit('move', move.san); // Emit the move event here
         this.$emit('fen', this.chess.fen());

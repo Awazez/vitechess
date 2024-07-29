@@ -1,34 +1,27 @@
 <template>
   <div class="container">
     <div class="container-top">
-
-    </div>
-    <div class="analysis-header">
-      Analysis
+      <div class="engine-toggle">
+        {{ engineOn ? 'Engine is on' : 'Engine is off' }}
+        <label class="switch">
+          <input type="checkbox" v-model="engineOn">
+          <span class="slider round"></span>
+        </label>
+      </div>
     </div>
     <div class="notation-panel">
       <div class="notation-header">
-        <div class="notation-title">
-          Notation
-        </div>
-        <div class="engine-toggle">
-          Engine is on
-          <label class="switch">
-            <input type="checkbox" v-model="engineOn">
-            <span class="slider round"></span>
-          </label>
-        </div>
       </div>
       <div class="evaluation">
-        <div class="eval-score">{{ evaluationScore }}</div>
+  
       </div>
       <div class="notation-content-wrapper">
         <table class="notation-content">
           <tbody>
             <tr v-for="(pair, index) in formattedMoves" :key="index">
-              <td>{{ index + 1 }}</td>
-              <td :class="{ highlight: currentMoveIndex === index * 2 }">{{ pair.white }}</td>
-              <td :class="{ highlight: currentMoveIndex === index * 2 + 1 }">{{ pair.black }}</td>
+              <td class="td-number">{{ index + 1 }}</td>
+              <td class="td-moves">{{ pair.white }}</td>
+              <td class="td-moves">{{ pair.black }}</td>
             </tr>
           </tbody>
         </table>
@@ -103,18 +96,20 @@ export default {
   border-radius: 15px;
   margin-bottom: 145px;
   color: #333;
+  font-size: 14px;
   font-family: "Montserrat", sans-serif;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .container-top {
   display: flex;
-  flex-direction: column;
+  align-content: center;
+  justify-content: space-around;
   width: 400px;
   height: 50px;
   background: #f0f0f0;
-  border-top-right-radius:15px;
-  border-top-left-radius:15px;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
   margin-bottom: 145px;
   font-family: "Montserrat", sans-serif;
 }
@@ -220,19 +215,30 @@ input:checked + .slider:before {
 .notation-content-wrapper {
   flex-grow: 1;
   overflow-y: auto;
-  width: 100%;
-  border-collapse: collapse;
+  width: 380px;
   font-size: 14px;
-  margin-top: 10px;
   color: #333;
-  table-layout: fixed; /* Ensure consistent column widths */
   max-height: 300px; /* Adjust as needed */
 }
 
-.notation-content th, 
+.td-number {
+  width: 100px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Montserrat", sans-serif;
+}
+
+.td-moves {
+  width: 100px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Montserrat", sans-serif;
+}
+
+
+.notation-content th,
 .notation-content td {
   padding: 10px;
-  border: 1px solid #e0e0e0;
   text-align: center; /* Center text in cells */
 }
 
@@ -277,4 +283,5 @@ button:hover {
   background-color: #e0e0e0;
 }
 </style>
+
 
