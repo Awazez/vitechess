@@ -12,9 +12,7 @@
     <div class="notation-panel">
       <div class="notation-header">
       </div>
-      <div class="evaluation">
   
-      </div>
       <div class="notation-content-wrapper">
         <table class="notation-content">
           <tbody>
@@ -110,7 +108,7 @@ export default {
   background: #f0f0f0;
   border-top-right-radius: 15px;
   border-top-left-radius: 15px;
-  margin-bottom: 145px;
+  margin-bottom: 70px;
   font-family: "Montserrat", sans-serif;
 }
 
@@ -118,15 +116,13 @@ export default {
   font-size: 24px;
   font-weight: bold;
   text-align: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #dadada;
 }
 
 .notation-panel {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  padding: 10px;
 }
 
 .notation-header {
@@ -134,8 +130,6 @@ export default {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
 }
 
 .notation-title {
@@ -201,45 +195,42 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-.evaluation {
-  text-align: center;
-  margin: 10px 0;
-}
-
-.eval-score {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-}
-
 .notation-content-wrapper {
   flex-grow: 1;
   overflow-y: auto;
-  width: 380px;
+  width: 400px;
   font-size: 14px;
   color: #333;
   max-height: 300px; /* Adjust as needed */
 }
 
+.notation-content {
+  border-collapse: collapse; /* Collapse borders */
+  width: 100%; /* Ensure table width */
+}
+
 .td-number {
-  width: 100px;
+  width: 40px;
+  height: 5px; /* Set your desired height here */
   font-size: 14px;
   font-weight: 500;
+  border-right: 1px solid #dadada;
+  background: rgba(247,246,245,255);
   font-family: "Montserrat", sans-serif;
 }
 
 .td-moves {
   width: 100px;
+  height: 5px; /* Set your desired height here */
   font-size: 14px;
   font-weight: 500;
   font-family: "Montserrat", sans-serif;
 }
 
-
 .notation-content th,
 .notation-content td {
-  padding: 10px;
   text-align: center; /* Center text in cells */
+  padding: 10px; /* Add padding for better appearance */
 }
 
 .notation-content th {
@@ -283,5 +274,6 @@ button:hover {
   background-color: #e0e0e0;
 }
 </style>
+
 
 
