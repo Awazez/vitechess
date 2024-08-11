@@ -18,8 +18,18 @@
           <tbody>
             <tr v-for="(pair, index) in formattedMoves" :key="index">
               <td class="td-number">{{ index + 1 }}</td>
-              <td class="td-moves">{{ pair.white }}</td>
-              <td class="td-moves">{{ pair.black }}</td>
+              <td 
+                class="td-moves" 
+                :class="{ 'highlight': isSelectedMove(index * 2) }" 
+                @click="selectMove(index * 2)">
+                {{ pair.white }}
+              </td>
+              <td 
+                class="td-moves" 
+                :class="{ 'highlight': isSelectedMove(index * 2 + 1) }" 
+                @click="selectMove(index * 2 + 1)">
+                {{ pair.black }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -77,7 +87,13 @@ export default {
       if (this.currentMoveIndex < this.moves.length - 1) {
         this.currentMoveIndex += 1;
       }
-    }
+    },
+    selectMove(index) {
+      this.currentMoveIndex = index;
+    },
+    isSelectedMove(index) {
+      return this.currentMoveIndex === index;
+    },
   }
 };
 </script>
@@ -200,7 +216,7 @@ input:checked + .slider:before {
   overflow-y: auto;
   width: 400px;
   font-size: 14px;
-  color: #333;
+  color: grey;
   max-height: 300px; /* Adjust as needed */
 }
 
@@ -233,6 +249,17 @@ input:checked + .slider:before {
   padding: 10px; /* Add padding for better appearance */
 }
 
+.td-moves:hover {
+  font-weight: bold;
+  color: white; /* Change text color to white for better visibility */
+  background-color: #1b79cf; /* Grey background for emphasis */
+}
+
+.highlight {
+  color: black;
+  background-color: #c8def4; /* Highlight color on click */
+}
+
 .notation-content th {
   background-color: #f7f7f7;
   color: #333;
@@ -243,16 +270,7 @@ input:checked + .slider:before {
 }
 
 .notation-content tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.notation-content tr:hover {
-  background-color: #f1f1f1;
-}
-
-.notation-content .highlight {
-  font-weight: bold;
-  color: #d9534f; /* Red text for emphasis */
+  background-color: white;
 }
 
 .navigation {
