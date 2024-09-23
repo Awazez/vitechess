@@ -22,13 +22,13 @@
                 class="td-moves" 
                 :class="{ 'highlight': isSelectedMove(index * 2) }" 
                 @click="selectMove(index * 2)">
-                {{ pair.white }}
+                {{ pair.white }} <span v-if="pair.whiteEval">({{ pair.whiteEval }})</span>
               </td>
               <td 
                 class="td-moves" 
                 :class="{ 'highlight': isSelectedMove(index * 2 + 1) }" 
                 @click="selectMove(index * 2 + 1)">
-                {{ pair.black }}
+                {{ pair.black }} <span v-if="pair.blackEval">({{ pair.blackEval }})</span>
               </td>
             </tr>
           </tbody>
@@ -43,21 +43,24 @@
 </template>
 
 <script>
+import { Chess } from 'chess.js';
+
 export default {
   props: {
+    initialFen: {
+      type: String,
+      default: 'start' // Use 'start' for the initial position
+    },
     moves: {
       type: Array,
       required: true
-    },
-    evaluationScore: {
-      type: String,
-      default: '+0.1'
     }
   },
   data() {
     return {
       engineOn: true,
-      currentMoveIndex: 0
+      currentMoveIndex: 0,
+      evaluations: {} // Store evaluations keyed by move index
     };
   },
   computed: {
@@ -66,37 +69,88 @@ export default {
       for (let i = 0; i < this.moves.length; i += 2) {
         const whiteMove = this.moves[i] || '';
         const blackMove = this.moves[i + 1] || '';
-        const whiteEval = this.getEval(i);
-        const blackEval = this.getEval(i + 1);
+        const whiteEval = this.evaluations[i];
+        const blackEval = this.evaluations[i + 1];
         pairs.push({ white: whiteMove, whiteEval, black: blackMove, blackEval });
       }
       return pairs;
     }
   },
+  watch: {
+    engineOn(newVal) {
+      if (newVal) {
+        this.evaluateAllMoves();
+      } else {
+        this.evaluations = {};
+      }
+    },
+    moves: {
+      handler() {
+        if (this.engineOn) {
+          this.evaluateAllMoves();
+        }
+      },
+      deep: true
+    }
+  },
   methods: {
-    getEval(index) {
-      // Placeholder for actual evaluation logic
-      return '+0.1';
+    async evaluateAllMoves() {
+      const chess = new Chess(this.initialFen);
+      for (let i = 0; i < this.moves.length; i++) {
+        const move = this.moves[i];
+        if (!chess.move(move)) {
+          console.error(`Invalid move: ${move}`);
+          continue;
+        }
+
+        const fen = chess.fen();
+        // Fetch evaluation for this position
+        await this.getEval(i, fen);
+      }
+    },
+    async getEval(index, fen) {
+      try {
+        const response = await fetch(`http://localhost:3000/evaluate?fen=${encodeURIComponent(fen)}`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          // Assuming the API returns an array of evaluations
+          const score = data[0].score;
+          // Update evaluations
+          this.$set(this.evaluations, index, score);
+        }
+      } catch (error) {
+        console.error('Error fetching evaluation:', error);
+      }
     },
     prevMove() {
       if (this.currentMoveIndex > 0) {
         this.currentMoveIndex -= 1;
+        this.$emit('move-selected', this.currentMoveIndex);
       }
     },
     nextMove() {
       if (this.currentMoveIndex < this.moves.length - 1) {
         this.currentMoveIndex += 1;
+        this.$emit('move-selected', this.currentMoveIndex);
       }
     },
     selectMove(index) {
       this.currentMoveIndex = index;
+      this.$emit('move-selected', index);
     },
     isSelectedMove(index) {
       return this.currentMoveIndex === index;
     },
+  },
+  mounted() {
+    if (this.engineOn) {
+      this.evaluateAllMoves();
+    }
   }
 };
 </script>
+
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');

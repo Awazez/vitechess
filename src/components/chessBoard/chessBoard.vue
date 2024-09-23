@@ -197,12 +197,31 @@ export default defineComponent({
   return (this.lastMoveStart && this.lastMoveStart.row === row && this.lastMoveStart.col === col) ||
          (this.lastMoveEnd && this.lastMoveEnd.row === row && this.lastMoveEnd.col === col);
 },
-  },
-  watch: {
-    fen(newFen) {
-      this.updateBoard(newFen);
+highlightLastMove(move) {
+    if (move) {
+      const from = move.from;
+      const to = move.to;
+
+      // Convert 'a'-'h' to 0-7 for columns and '1'-'8' to 0-7 for rows
+      const  fromRow = from.charCodeAt(0) - 'a'.charCodeAt(0);
+      const  fromCol = 8 - parseInt(from[1]); // Chessboard rows are usually reversed
+
+      const toRow = to.charCodeAt(0) - 'a'.charCodeAt(0);
+      const toCol = 8 - parseInt(to[1]);
+
+      this.lastMoveStart = { row: fromRow, col: fromCol };
+      this.lastMoveEnd = { row: toRow, col: toCol };
+    } else {
+      this.lastMoveStart = null;
+      this.lastMoveEnd = null;
     }
   }
+  },
+  watch: {
+  fen(newFen) {
+    this.updateBoard(newFen); // Met à jour le tableau lorsque le FEN change
+  }
+}
 });
 </script>
 
@@ -219,8 +238,8 @@ export default defineComponent({
   flex-direction: column;
   background: var(--white-color);
   border-radius: 15px;
-  padding-top: 15px;
-  padding-right: 15px;
+  padding-top: 20px;  /* Ajuster le padding pour centrer les labels des colonnes */
+  padding-right: 20px;
   
 }
 
@@ -235,8 +254,8 @@ export default defineComponent({
   color: var(--black-color);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 15px;
-  margin-right: 10px;
-  margin-top: 30px;
+  margin-right: 12px;
+  margin-top: 23px;
 }
 
 .chess-board {
