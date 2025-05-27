@@ -14,10 +14,20 @@
                 { 'selected': isSelected(rowIndex, colIndex), 
                   'possible-move': isPossibleMove(rowIndex, colIndex), 
                   'king-check': isKingInCheck(rowIndex, colIndex),
-                  'last-move': isLastMove(rowIndex, colIndex) }]" 
-              @click="handleSquareClick(rowIndex, colIndex)">
-            <div v-if="square" class="piece">
+                  'last-move': isLastMove(rowIndex, colIndex) }]"
+              @click="handleSquareClick(rowIndex, colIndex)"
+              @dragover.prevent
+              @drop="handleDrop($event, rowIndex, colIndex)">
+            <div v-if="square" 
+                class="piece"
+                draggable="true"
+                @dragstart="handleDragStart($event, rowIndex, colIndex)"
+                @dragend="handleDragEnd">
               <chessPiece :piece="square"/>
+            </div>
+            <div v-else
+                class="empty-square"
+                @click="handleSquareClick(rowIndex, colIndex)">
             </div>
             <div v-if="isPossibleMove(rowIndex, colIndex)" class="move-point"></div>
           </div>
@@ -58,7 +68,8 @@ export default defineComponent({
       columnLabels: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
       rowLabels: ['1', '2', '3', '4', '5', '6', '7', '8'],
       lastMoveStart: null,
-      lastMoveEnd: null 
+      lastMoveEnd: null,
+      draggedPiece: null
     };
   },
   computed: {
@@ -105,47 +116,42 @@ export default defineComponent({
       return (row + col) % 2 === 0 ? 'white' : 'black';
     },
     getCoordinates(row, col) {
-      // Correctly compute the coordinates based on the row and column labels
-      const rowLabel = this.rowLabels[7 - col]; // Adjust if your row labels are reversed
+      const rowLabel = this.rowLabels[7 - col];
       const colLabel = this.columnLabels[row];
       return colLabel + rowLabel;
-  },
+    },
+    handleSquareClick(rowIndex, colIndex) {
+      const piece = this.board[rowIndex][colIndex];
+      const currentTurn = this.chess.turn() === 'w' ? 'w' : 'b';
 
-  handleSquareClick(rowIndex, colIndex) {
-  const piece = this.board[rowIndex][colIndex];
-  const currentTurn = this.chess.turn() === 'w' ? 'w' : 'b';
-
-  if (this.selectedPiece) {
-    if (piece && piece[0] === currentTurn) {
-      // If clicking on another piece of the current player, update the selected piece
-      this.selectedPiece = { row: rowIndex, col: colIndex };
-      this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
-    } else {
-      // Otherwise, try to move the selected piece
-      this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
-      this.selectedPiece = null;
-      this.possibleMoves = [];
-    }
-  } else if (piece && piece[0] === currentTurn) {
-    // If no piece is selected and the clicked piece belongs to the current player, select it
-    this.selectedPiece = { row: rowIndex, col: colIndex };
-    this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
-  }
-},
+      if (this.selectedPiece) {
+        if (piece && piece[0] === currentTurn) {
+          this.selectedPiece = { row: rowIndex, col: colIndex };
+          this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+        } else {
+          this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+          this.selectedPiece = null;
+          this.possibleMoves = [];
+        }
+      } else if (piece && piece[0] === currentTurn) {
+        this.selectedPiece = { row: rowIndex, col: colIndex };
+        this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+      }
+    },
     movePiece(fromRow, fromCol, toRow, toCol) {
       const from = this.getCoordinates(fromRow, fromCol);
       const to = this.getCoordinates(toRow, toCol);
       const move = this.chess.move({ from, to });
       if (move) {
-        this.lastMoveStart = { row: fromRow, col: fromCol }; 		
+        this.lastMoveStart = { row: fromRow, col: fromCol };
         this.lastMoveEnd = { row: toRow, col: toCol };
         if (move.flags.includes('c')) {
-          this.playCaptureSound(); // Play capture sound
+          this.playCaptureSound();
         } else {
-          this.playMoveSound(); // Play move sound
+          this.playMoveSound();
         }
         this.updateBoard(this.chess.fen());
-        this.$emit('move', move.san); // Emit the move event here
+        this.$emit('move', move.san);
         this.$emit('fen', this.chess.fen());
       } else {
         this.selectedPiece = null;
@@ -155,73 +161,100 @@ export default defineComponent({
       return this.selectedPiece && this.selectedPiece.row === row && this.selectedPiece.col === col;
     },
     getPossibleMoves(row, col) {
-  const square = this.getCoordinates(row, col);
-  console.log(`Getting moves for square: ${square}`);
-
-  const possibleMoves = this.chess.moves({ square, verbose: true });
-
-  return possibleMoves.map(move => {
-    // Convert 'a'-'h' to 0-7
-    const toRow = move.to.charCodeAt(0) - 'a'.charCodeAt(0);
-    // Convert '1'-'8' to 0-7 by reversing the rank
-    const toCol = 8 - parseInt(move.to.charAt(1)); // Correctly map the row
-    console.log(`Mapping move ${move.to} to indices row: ${toRow}, col: ${toCol}`);
-    return { row: toRow, col: toCol };
-  });
-},
+      const square = this.getCoordinates(row, col);
+      const possibleMoves = this.chess.moves({ square, verbose: true });
+      return possibleMoves.map(move => {
+        const toRow = move.to.charCodeAt(0) - 'a'.charCodeAt(0);
+        const toCol = 8 - parseInt(move.to.charAt(1));
+        return { row: toRow, col: toCol };
+      });
+    },
     isPossibleMove(row, col) {
       return this.possibleMoves.some(move => move.row === row && move.col === col);
     },
     isKingInCheck(rowIndex, colIndex) {
-    // First, find the current position of the king for the player who's turn it is
-    const kingPosition = this.findKingPosition(this.chess.turn());
-    // Check if the current square has the king and then check if it's in check
-    if (kingPosition && kingPosition.row === rowIndex && kingPosition.col === colIndex) {
-      return this.chess.inCheck();
-    }
-    return false;
-  }, 
-  findKingPosition(color) {
-    const board = this.chess.board();
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board[i].length; j++) {
-        const piece = board[j][i];
-        if (piece && piece.type === 'k' && piece.color === color) {
-          return { row: i, col: j };
+      const kingPosition = this.findKingPosition(this.chess.turn());
+      if (kingPosition && kingPosition.row === rowIndex && kingPosition.col === colIndex) {
+        return this.chess.inCheck();
+      }
+      return false;
+    },
+    findKingPosition(color) {
+      const board = this.chess.board();
+      for (let i = 0; i < board.length; i++) {
+        for (let j = 0; j < board[i].length; j++) {
+          const piece = board[j][i];
+          if (piece && piece.type === 'k' && piece.color === color) {
+            return { row: i, col: j };
+          }
         }
       }
+      return null;
+    },
+    isLastMove(row, col) {
+      return (this.lastMoveStart && this.lastMoveStart.row === row && this.lastMoveStart.col === col) ||
+             (this.lastMoveEnd && this.lastMoveEnd.row === row && this.lastMoveEnd.col === col);
+    },
+    highlightLastMove(move) {
+      if (move) {
+        const from = move.from;
+        const to = move.to;
+        const fromRow = from.charCodeAt(0) - 'a'.charCodeAt(0);
+        const fromCol = 8 - parseInt(from[1]);
+        const toRow = to.charCodeAt(0) - 'a'.charCodeAt(0);
+        const toCol = 8 - parseInt(to[1]);
+        this.lastMoveStart = { row: fromRow, col: fromCol };
+        this.lastMoveEnd = { row: toRow, col: toCol };
+      } else {
+        this.lastMoveStart = null;
+        this.lastMoveEnd = null;
+      }
+    },
+    handleDragStart(event, rowIndex, colIndex) {
+      const piece = this.board[rowIndex][colIndex];
+      const currentTurn = this.chess.turn() === 'w' ? 'w' : 'b';
+      
+      if (piece && piece[0] === currentTurn) {
+        this.draggedPiece = { row: rowIndex, col: colIndex };
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', `${rowIndex},${colIndex}`);
+        this.selectedPiece = { row: rowIndex, col: colIndex };
+        this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+      } else {
+        event.preventDefault();
+      }
+    },
+    handleDragEnd() {
+      this.draggedPiece = null;
+      this.selectedPiece = null;
+      this.possibleMoves = [];
+    },
+    handleDrop(event, toRow, toCol) {
+      event.preventDefault();
+      if (!this.draggedPiece) return;
+
+      const fromRow = this.draggedPiece.row;
+      const fromCol = this.draggedPiece.col;
+      
+      this.movePiece(fromRow, fromCol, toRow, toCol);
+      this.draggedPiece = null;
+      
+      // Mettre à jour les mouvements possibles après le déplacement
+      const piece = this.board[toRow][toCol];
+      if (piece) {
+        this.selectedPiece = { row: toRow, col: toCol };
+        this.possibleMoves = this.getPossibleMoves(toRow, toCol);
+      } else {
+        this.selectedPiece = null;
+        this.possibleMoves = [];
+      }
     }
-    return null; // If no king found, return null
-  },
-  isLastMove(row, col) {
-  return (this.lastMoveStart && this.lastMoveStart.row === row && this.lastMoveStart.col === col) ||
-         (this.lastMoveEnd && this.lastMoveEnd.row === row && this.lastMoveEnd.col === col);
-},
-highlightLastMove(move) {
-    if (move) {
-      const from = move.from;
-      const to = move.to;
-
-      // Convert 'a'-'h' to 0-7 for columns and '1'-'8' to 0-7 for rows
-      const  fromRow = from.charCodeAt(0) - 'a'.charCodeAt(0);
-      const  fromCol = 8 - parseInt(from[1]); // Chessboard rows are usually reversed
-
-      const toRow = to.charCodeAt(0) - 'a'.charCodeAt(0);
-      const toCol = 8 - parseInt(to[1]);
-
-      this.lastMoveStart = { row: fromRow, col: fromCol };
-      this.lastMoveEnd = { row: toRow, col: toCol };
-    } else {
-      this.lastMoveStart = null;
-      this.lastMoveEnd = null;
-    }
-  }
   },
   watch: {
-  fen(newFen) {
-    this.updateBoard(newFen); // Met à jour le tableau lorsque le FEN change
+    fen(newFen) {
+      this.updateBoard(newFen);
+    }
   }
-}
 });
 </script>
 
@@ -293,6 +326,12 @@ highlightLastMove(move) {
 .piece {
   width: 100%;
   height: 100%;
+  cursor: grab;
+  user-select: none;
+}
+
+.piece:active {
+  cursor: grabbing;
 }
 
 .column-labels {
@@ -337,6 +376,7 @@ highlightLastMove(move) {
 }
 
 </style>
+
 
 
 
