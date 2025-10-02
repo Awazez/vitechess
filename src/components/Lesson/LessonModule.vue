@@ -111,11 +111,35 @@ async function startDemo() {
   demoRunning.value = true
   demoAborted.value = false
   resetToInitialPosition()
+  if (!Array.isArray(props.scriptedMoves) || props.scriptedMoves.length === 0) {
+    console.warn("🚫 Aucune démo scriptée pour ce module")
+    message.value = "🚫 Ce module n'a pas de démo scriptée."
+    messageType.value = "bad"
+    demoRunning.value = false
+    return
+  }
+  console.log(`▶️ Début de la démo: ${props.scriptedMoves.length} coup(s)`) 
   const chess = new Chess(currentFen.value)
 
   for (let i = 0; i < props.scriptedMoves.length; i++) {
     if (demoAborted.value) break
-    const move = chess.move(props.scriptedMoves[i], { sloppy: true })
+    const step = props.scriptedMoves[i]
+
+    // Accepte: 'e2e4' | 'e4' (SAN) | { from, to, promotion? }
+    let move
+    if (typeof step === 'string') {
+      // essaie UCI d'abord
+      if (/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(step)) {
+        const from = step.slice(0, 2)
+        const to = step.slice(2, 4)
+        const promotion = step.slice(4) || undefined
+        move = chess.move({ from, to, promotion })
+      } else {
+        move = chess.move(step, { sloppy: true })
+      }
+    } else if (step && typeof step === 'object' && step.from && step.to) {
+      move = chess.move({ from: step.from, to: step.to, promotion: step.promotion })
+    }
     if (!move) break
 
     moves.value.push(move.san)
@@ -123,7 +147,16 @@ async function startDemo() {
     chessBoard.value?.loadFen(currentFen.value)
     chessBoard.value?.highlightLastMove(move)
 
-    message.value = `▶️ Coup ${i + 1}: ${move.san}`
+    // Sons
+    if (move.flags && move.flags.includes('c')) {
+      chessBoard.value?.playCaptureSound?.()
+    } else {
+      chessBoard.value?.playMoveSound?.()
+    }
+
+    message.value = (step && typeof step === 'object' && step.comment)
+      ? step.comment
+      : `▶️ Coup ${i + 1}: ${move.san}`
     messageType.value = ""
     await new Promise(r => setTimeout(r, 1000))
   }
