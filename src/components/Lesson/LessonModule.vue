@@ -33,7 +33,9 @@ const props = defineProps({
   scriptedMoves: {
     type: Array,
     default: () => []
-  }
+  },
+  // Optionnel: permet de fournir une partie PGN complète
+  scriptedPgn: { type: String, default: "" }
 })
 
 const currentFen = ref(props.initialFen)
@@ -51,8 +53,21 @@ const chessBoard = ref(null)
 // 🔥 Reset quand la prop initialFen change (changement de module)
 watch(() => props.initialFen, () => resetToInitialPosition())
 
+// 🔥 Reset aussi quand le PGN change (changement de module PGN)
+watch(() => props.scriptedPgn, () => resetToInitialPosition())
+
 function resetToInitialPosition() {
-  currentFen.value = props.initialFen
+  // Si un PGN est fourni et contient une FEN, elle prime
+  if (props.scriptedPgn) {
+    const parsed = parsePgn(props.scriptedPgn)
+    if (parsed && parsed.fen) {
+      currentFen.value = parsed.fen
+    } else {
+      currentFen.value = props.initialFen
+    }
+  } else {
+    currentFen.value = props.initialFen
+  }
   moves.value = []
   chessBoard.value?.loadFen(currentFen.value)
   message.value = "À toi de jouer !"
@@ -61,6 +76,7 @@ function resetToInitialPosition() {
 
 // --- Gestion des coups utilisateur ---
 async function handleMove(move) {
+  if (demoRunning.value) return
   if (!move?.from || !move?.to) return
   const uciMove = move.uci || (move.from + move.to + (move.promotion || ""))
 
@@ -111,19 +127,29 @@ async function startDemo() {
   demoRunning.value = true
   demoAborted.value = false
   resetToInitialPosition()
-  if (!Array.isArray(props.scriptedMoves) || props.scriptedMoves.length === 0) {
+  // Préparer la séquence de coups: priorité aux scriptedMoves, sinon PGN
+  let sequence = Array.isArray(props.scriptedMoves) ? [...props.scriptedMoves] : []
+  if ((!sequence || sequence.length === 0) && props.scriptedPgn) {
+    const { fen: fenFromPgn, sanMoves } = parsePgn(props.scriptedPgn)
+    if (fenFromPgn) {
+      currentFen.value = fenFromPgn
+      chessBoard.value?.loadFen(currentFen.value)
+    }
+    sequence = sanMoves
+  }
+  if (!sequence || sequence.length === 0) {
     console.warn("🚫 Aucune démo scriptée pour ce module")
     message.value = "🚫 Ce module n'a pas de démo scriptée."
     messageType.value = "bad"
     demoRunning.value = false
     return
   }
-  console.log(`▶️ Début de la démo: ${props.scriptedMoves.length} coup(s)`) 
+  console.log(`▶️ Début de la démo: ${sequence.length} coup(s)`) 
   const chess = new Chess(currentFen.value)
 
-  for (let i = 0; i < props.scriptedMoves.length; i++) {
+  for (let i = 0; i < sequence.length; i++) {
     if (demoAborted.value) break
-    const step = props.scriptedMoves[i]
+    const step = sequence[i]
 
     // Accepte: 'e2e4' | 'e4' (SAN) | { from, to, promotion? }
     let move
@@ -158,12 +184,19 @@ async function startDemo() {
       ? step.comment
       : `▶️ Coup ${i + 1}: ${move.san}`
     messageType.value = ""
-    await new Promise(r => setTimeout(r, 1000))
+    // Delay between moves; allow stop during wait
+    const delayMs = 1000
+    const start = Date.now()
+    while (Date.now() - start < delayMs) {
+      if (demoAborted.value) break
+      await new Promise(r => setTimeout(r, 50))
+    }
+    if (demoAborted.value) break
   }
 
   if (!demoAborted.value) {
-    message.value = "🏆 Démo scriptée terminée !"
-    messageType.value = "good"
+    // Fin normale: on remet les pièces en place et on redonne la main au joueur
+    resetToInitialPosition()
   }
 
   demoRunning.value = false
@@ -174,7 +207,7 @@ function stopDemo() {
   demoRunning.value = false
   message.value = "⏹️ Démo arrêtée"
   messageType.value = ""
-  setTimeout(() => resetToInitialPosition(), 1500)
+  // Ne pas réinitialiser la position pour éviter l'effet de rollback
 }
 
 // --- Indice (via Stockfish si tu veux le garder) ---
@@ -221,7 +254,29 @@ function translateHintToFrench(uciMove) {
   return moveNotation
 }
 
+// --- Utilitaires PGN ---
+function parsePgn(pgn) {
+  // Extrait FEN si présente
+  const fenMatch = pgn.match(/\[FEN\s+"([^"]+)"\]/i)
+  const fen = fenMatch ? fenMatch[1] : null
+  // Enlève headers
+  const body = pgn.replace(/\[[^\]]*\]\s*/g, " ")
+  // Enlève commentaires { ... } et variantes ( ... )
+  const noComments = body.replace(/\{[^}]*\}/g, " ").replace(/\([^)]*\)/g, " ")
+  // Enlève numéros de coups et résultats
+  const tokens = noComments
+    .replace(/\d+\.(\.\.)?/g, " ")
+    .replace(/1-0|0-1|1\/2-1\/2|\*/g, " ")
+    .trim()
+    .split(/\s+/)
+  // Garde que les SAN plausibles (incluant roques et promotions)
+  const sanMoves = tokens.filter(t => /^(O-O(-O)?|[NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](=[NBRQ])?[+#]?|[a-h]x[a-h][1-8](=[NBRQ])?[+#]?)$/.test(t))
+  return { fen, sanMoves }
+}
+
 onMounted(() => {
+  // Charger la position initiale correcte au démarrage
+  resetToInitialPosition()
   message.value = "👋 Bienvenue ! Clique sur 🚀 pour lancer la démo."
   messageType.value = "good"
 })

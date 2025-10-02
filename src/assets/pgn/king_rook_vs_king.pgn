@@ -1,0 +1,7 @@
+[Event "Mat élémentaire : tour et roi contre roi"]
+[Site "vitechess"]
+[Result "*"]
+[SetUp "1"]
+[FEN "8/8/8/4k3/8/8/8/4K2R w K - 0 1"]
+
+1. Rh4 Kd6 2. Rh5 Kc7 3. Rh6 Kd7 4. Ke2 Ke7 5. Ke3 Kf7 6. Kf4 Ke7 7. Rg6 Kf7 8. Kf5 Ke7 9. Ke5 Kd7 10. Kd5 Ke7 11. Ra6 Kf7 12. Ke5 Ke7 13. Ra7+ Kd8 14. Kd6 Ke8 15. Rb7 Kf8 16. Ke6 Kg8 17. Kf6 Kh8 18. Kg6 Kg8 19. Rb8#

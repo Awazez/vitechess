@@ -1,0 +1,7 @@
+[Event "Mat élémentaire : Dame et roi contre roi"]
+[Site "vitechess"]
+[Result "*"]
+[SetUp "1"]
+[FEN "8/8/8/4k3/8/8/8/4K1Q1 w - - 0 1"]
+
+1. Qg4 { Coupe les cases d'échappatoire et met le Roi sous pression } Kf6 { Le Roi se décale latéralement } 2. Qh5 { Réduit l'espace et garde les menaces } Ke6 { Avance vers le centre } 3. Qg5 { Maintient la pression et contrôle e7 } Kf7 { Recul défensif } 4. Qh6 { Gagne du tempo et vise les faiblesses } Ke7 { Cherche des cases sûres } 5. Qg6 { Enferme le Roi sur les colonnes e-f } Kd7 { Fuite vers l'aile-Dame } 6. Qf6 { Contrôle des cases clés et opposition de la Dame } Kc7 { Poursuite de la fuite } 7. Qe6 { Coupe la 6e rangée } Kd8 { Retour forcé } 8. Qf7 { Filet de mat qui se resserre } Kc8 { Coincé côté Dame } 9. Qe7 { Infiltration sur la 7e } Kb8 { Vers le coin } 10. Qd7 { Étau qui se referme } Ka8 { Coin final } 11. Kd2 { Activation du Roi blanc } Kb8 { Attente sans issue } 12. Kc3 { Rapprochement méthodique } Ka8 { Poussé dans le coin } 13. Kb4 { Construction de la boîte } Kb8 { Plus d'espace } 14. Kb5 { Réduction supplémentaire } Ka8 { Aucune case } 15. Kb6 { Zugzwang imminent } Kb8 { Dernier repli } 16. Qb7# { Mat de la Dame aidée du Roi }
