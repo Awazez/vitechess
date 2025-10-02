@@ -14,7 +14,8 @@
                 { 'selected': isSelected(rowIndex, colIndex), 
                   'possible-move': isPossibleMove(rowIndex, colIndex), 
                   'king-check': isKingInCheck(rowIndex, colIndex),
-                  'last-move': isLastMove(rowIndex, colIndex) }]"
+                  'last-move': isLastMove(rowIndex, colIndex),
+                  'dragging': draggedPiece && draggedPiece.row === rowIndex && draggedPiece.col === colIndex }]"
               @click="handleSquareClick(rowIndex, colIndex)"
               @dragover.prevent
               @drop="handleDrop($event, rowIndex, colIndex)">
@@ -55,10 +56,13 @@ export default defineComponent({
     chessPiece
   },
   props: {
-    fen: String,
-    moves: Array,
-    currentMoveIndex: Number
+    fen: { type: String, required: true },
+    moves: { type: Array, default: () => [] },
+    currentMoveIndex: { type: Number, default: -1 },
+    flipped: { type: Boolean, default: false }
   },
+  emits: ["move", "fen"],
+
   data() {
     return {
       chess: new Chess(),
@@ -88,7 +92,13 @@ export default defineComponent({
   },
   methods: {
     updateBoard(fen) {
-      this.chess.load(fen);
+      try {
+        this.chess.load(fen);
+      } catch (e) {
+        console.warn("⚠️ FEN invalide reçue:", fen);
+        return;
+      }
+
       const newBoard = Array(8).fill(null).map(() => Array(8).fill(null));
       this.chess.board().forEach((row, colIndex) => {
         row.forEach((square, rowIndex) => {
@@ -100,6 +110,7 @@ export default defineComponent({
       });
       this.board = newBoard;
     },
+
     playMoveSound() {
       const moveSound = this.$refs.moveSound;
       if (moveSound) {
@@ -141,22 +152,54 @@ export default defineComponent({
     movePiece(fromRow, fromCol, toRow, toCol) {
       const from = this.getCoordinates(fromRow, fromCol);
       const to = this.getCoordinates(toRow, toCol);
-      const move = this.chess.move({ from, to });
-      if (move) {
+      const piece = this.board[fromRow][fromCol];
+      
+      let move = null;
+      
+      try {
+        const isPawn = piece && piece[1] === "P";
+        const toRank = to[1];
+        const isWhitePromoting = piece[0] === "w" && toRank === "8";
+        const isBlackPromoting = piece[0] === "b" && toRank === "1";
+        
+        if (isPawn && (isWhitePromoting || isBlackPromoting)) {
+          move = this.chess.move({ from, to, promotion: "q" });
+        } else {
+          move = this.chess.move({ from, to });
+        }
+        
+        if (!move) {
+          this.selectedPiece = null;
+          return;
+        }
+        
         this.lastMoveStart = { row: fromRow, col: fromCol };
         this.lastMoveEnd = { row: toRow, col: toCol };
-        if (move.flags.includes('c')) {
+        
+        if (move.flags.includes("c")) {
           this.playCaptureSound();
         } else {
           this.playMoveSound();
         }
+        
         this.updateBoard(this.chess.fen());
-        this.$emit('move', move.san);
-        this.$emit('fen', this.chess.fen());
-      } else {
+        
+        this.$emit("move", {
+          from: move.from,
+          to: move.to,
+          san: move.san,
+          uci: move.from + move.to + (move.promotion || ""),
+          promotion: move.promotion || null
+        });
+        
+        this.$emit("fen", this.chess.fen());
+        
+      } catch (err) {
+        console.error("❌ Erreur movePiece:", err);
         this.selectedPiece = null;
       }
     },
+
     isSelected(row, col) {
       return this.selectedPiece && this.selectedPiece.row === row && this.selectedPiece.col === col;
     },
@@ -239,7 +282,6 @@ export default defineComponent({
       this.movePiece(fromRow, fromCol, toRow, toCol);
       this.draggedPiece = null;
       
-      // Mettre à jour les mouvements possibles après le déplacement
       const piece = this.board[toRow][toCol];
       if (piece) {
         this.selectedPiece = { row: toRow, col: toCol };
@@ -248,6 +290,36 @@ export default defineComponent({
         this.selectedPiece = null;
         this.possibleMoves = [];
       }
+    },
+    
+    undoMove() {
+      console.log("🔄 undoMove() appelé");
+      console.log("📜 Historique:", this.chess.history());
+      console.log("📋 FEN actuelle:", this.chess.fen());
+      
+      if (this.chess.history().length > 0) {
+        const undoneMove = this.chess.undo();
+        console.log("✅ Coup annulé:", undoneMove);
+        this.updateBoard(this.chess.fen());
+        this.selectedPiece = null;
+        this.possibleMoves = [];
+        this.lastMoveStart = null;
+        this.lastMoveEnd = null;
+        this.$emit("fen", this.chess.fen());
+        console.log("📋 Nouvelle FEN après undo:", this.chess.fen());
+      } else {
+        console.warn("⚠️ Historique vide, impossible d'annuler");
+      }
+    },
+    
+    // Méthode pour recharger une FEN spécifique (utilisée par App.vue)
+    loadFen(fen) {
+      console.log("📥 Chargement forcé de la FEN:", fen);
+      this.updateBoard(fen);
+      this.selectedPiece = null;
+      this.possibleMoves = [];
+      this.lastMoveStart = null;
+      this.lastMoveEnd = null;
     }
   },
   watch: {
@@ -271,9 +343,9 @@ export default defineComponent({
   flex-direction: column;
   background: var(--white-color);
   border-radius: 15px;
-  padding-top: 20px;  /* Ajuster le padding pour centrer les labels des colonnes */
+  padding-top: 20px;
   padding-right: 20px;
-  
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .board-with-rows {
@@ -287,8 +359,15 @@ export default defineComponent({
   color: var(--black-color);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 15px;
+  font-weight: 600;
   margin-right: 12px;
   margin-top: 23px;
+}
+
+.row-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chess-board {
@@ -296,6 +375,21 @@ export default defineComponent({
   grid-template-columns: repeat(8, 69px);
   grid-template-rows: repeat(8, 69px);
   border: 3px solid var(--black-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  animation: board-appear 0.3s ease-out;
+}
+
+@keyframes board-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .square {
@@ -305,14 +399,7 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   position: relative;
-}
-
-.coordinates {
-  position: absolute;
-  top: 0;
-  left: 0;
-  font-size: 10px;
-  color: red;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .white {
@@ -328,10 +415,18 @@ export default defineComponent({
   height: 100%;
   cursor: grab;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .piece:active {
   cursor: grabbing;
+}
+
+.empty-square {
+  width: 100%;
+  height: 100%;
 }
 
 .column-labels {
@@ -348,35 +443,102 @@ export default defineComponent({
   color: var(--black-color);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 15px;
+  font-weight: 600;
 }
 
 .selected {
-  background-color:var(--selected-color) !important;
+  background-color: var(--selected-color) !important;
+  animation: pulse-select 0.3s ease-out;
+}
+
+@keyframes pulse-select {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .possible-move {
   position: relative;
 }
 
+.possible-move::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
 .move-point {
   width: 20px;
   height: 20px;
-  background-color: black;
-  opacity: 25%;
+  background-color: rgba(0, 0, 0, 0.25);
   border-radius: 50%;
   position: absolute;
+  pointer-events: none;
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .king-check {
-  background-color: var(--check-color); /* Adjust the color to fit your design */
+  background-color: var(--check-color) !important;
+  animation: check-pulse 1s ease-in-out infinite;
+  box-shadow: inset 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+@keyframes check-pulse {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(0.85);
+  }
 }
 
 .last-move {
-  background-color: var(--move-color);
+  background-color: var(--move-color) !important;
+  position: relative;
+  animation: highlight-move 0.4s ease-out;
+}
+
+@keyframes highlight-move {
+  0% {
+    box-shadow: inset 0 0 0 3px rgba(255, 255, 0, 0.8);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0px rgba(255, 255, 0, 0);
+  }
+}
+
+.last-move::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 255, 100, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.square.dragging .piece {
+  opacity: 0.5;
 }
 
 </style>
-
 
 
 

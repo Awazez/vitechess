@@ -1,351 +1,383 @@
 <template>
-  <div class="container">
-    <div class="container-top">
-      <div class="engine-toggle">
-        {{ engineOn ? 'Engine is on' : 'Engine is off' }}
-        <label class="switch">
-          <input type="checkbox" v-model="engineOn">
-          <span class="slider round"></span>
-        </label>
+  <div class="frame-container">
+    <div class="header-section">
+      <div class="title">Moves</div>
+      <label class="engine-toggle">
+        <input type="checkbox" v-model="engineOn">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Engine</span>
+      </label>
+    </div>
+
+    <div class="moves-section">
+      <div class="moves-list" ref="movesList">
+        <div v-if="moves.length === 0" class="empty-state">
+          No moves yet
+        </div>
+        <div v-for="(pair, index) in formattedMoves" :key="index" class="move-pair">
+          <div class="move-number">{{ index + 1 }}</div>
+          <div 
+            class="move-item" 
+            :class="{ 'active': isSelectedMove(index * 2) }" 
+            @click="selectMove(index * 2)">
+            {{ pair.white }}
+          </div>
+          <div 
+            v-if="pair.black"
+            class="move-item" 
+            :class="{ 'active': isSelectedMove(index * 2 + 1) }" 
+            @click="selectMove(index * 2 + 1)">
+            {{ pair.black }}
+          </div>
+        </div>
       </div>
     </div>
-    <div class="notation-panel">
-      <div class="notation-header">
-      </div>
-  
-      <div class="notation-content-wrapper">
-        <table class="notation-content">
-          <tbody>
-            <tr v-for="(pair, index) in formattedMoves" :key="index">
-              <td class="td-number">{{ index + 1 }}</td>
-              <td 
-                class="td-moves" 
-                :class="{ 'highlight': isSelectedMove(index * 2) }" 
-                @click="selectMove(index * 2)">
-                {{ pair.white }} <span v-if="pair.whiteEval">({{ pair.whiteEval }})</span>
-              </td>
-              <td 
-                class="td-moves" 
-                :class="{ 'highlight': isSelectedMove(index * 2 + 1) }" 
-                @click="selectMove(index * 2 + 1)">
-                {{ pair.black }} <span v-if="pair.blackEval">({{ pair.blackEval }})</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="navigation">
-        <button @click="prevMove">&laquo;</button>
-        <button @click="nextMove">&raquo;</button>
-      </div>
+
+    <div class="footer-section">
+      <button 
+        @click="firstMove" 
+        :disabled="currentMoveIndex < 0"
+        class="nav-btn">
+        ⟲
+      </button>
+      <button 
+        @click="prevMove" 
+        :disabled="currentMoveIndex < 0"
+        class="nav-btn">
+        ‹
+      </button>
+      <button 
+        @click="nextMove" 
+        :disabled="currentMoveIndex >= moves.length - 1"
+        class="nav-btn">
+        ›
+      </button>
+    
+      <button @click="flipBoard" class="flip-btn">
+        ⇅
+      </button>
     </div>
   </div>
 </template>
 
 <script>
-import { Chess } from 'chess.js';
-
 export default {
   props: {
-    initialFen: {
-      type: String,
-      default: 'start' // Use 'start' for the initial position
-    },
     moves: {
       type: Array,
       required: true
+    },
+    currentMoveIndex: {
+      type: Number,
+      default: -1
     }
   },
+  emits: ['move-selected', 'flip', 'reset-board'],
   data() {
     return {
-      engineOn: true,
-      currentMoveIndex: 0,
-      evaluations: {} // Store evaluations keyed by move index
+      engineOn: false,
+      localMoveIndex: this.currentMoveIndex
     };
   },
   computed: {
     formattedMoves() {
       const pairs = [];
       for (let i = 0; i < this.moves.length; i += 2) {
-        const whiteMove = this.moves[i] || '';
-        const blackMove = this.moves[i + 1] || '';
-        const whiteEval = this.evaluations[i];
-        const blackEval = this.evaluations[i + 1];
-        pairs.push({ white: whiteMove, whiteEval, black: blackMove, blackEval });
+        const whiteMove = this.translateMove(this.moves[i] || '');
+        const blackMove = this.translateMove(this.moves[i + 1] || '');
+        pairs.push({ white: whiteMove, black: blackMove });
       }
       return pairs;
     }
   },
   watch: {
-    engineOn(newVal) {
-      if (newVal) {
-        this.evaluateAllMoves();
-      } else {
-        this.evaluations = {};
-      }
+    currentMoveIndex(newVal) {
+      this.localMoveIndex = newVal;
+      this.$nextTick(() => {
+        this.scrollToActiveMove();
+      });
     },
-    moves: {
-      handler() {
-        if (this.engineOn) {
-          this.evaluateAllMoves();
-        }
-      },
-      deep: true
+    moves() {
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
     }
   },
   methods: {
-    async evaluateAllMoves() {
-      const chess = new Chess(this.initialFen);
-      for (let i = 0; i < this.moves.length; i++) {
-        const move = this.moves[i];
-        if (!chess.move(move)) {
-          console.error(`Invalid move: ${move}`);
-          continue;
-        }
+    translateMove(move) {
+      if (!move) return '';
 
-        const fen = chess.fen();
-        // Fetch evaluation for this position
-        await this.getEval(i, fen);
-      }
-    },
-    async getEval(index, fen) {
-      try {
-        const response = await fetch(`http://localhost:3000/evaluate?fen=${encodeURIComponent(fen)}`);
-        const data = await response.json();
-        if (data && data.length > 0) {
-          // Assuming the API returns an array of evaluations
-          const score = data[0].score;
-          // Update evaluations
-          this.$set(this.evaluations, index, score);
-        }
-      } catch (error) {
-        console.error('Error fetching evaluation:', error);
-      }
+      const map = {
+        K: 'R', // Roi
+        Q: 'D', // Dame
+        R: 'T', // Tour
+        B: 'F', // Fou
+        N: 'C'  // Cavalier
+      };
+
+      return move
+        .split('')
+        .map(ch => map[ch] || ch) // traduit uniquement si dans le mapping
+        .join('');
     },
     prevMove() {
-      if (this.currentMoveIndex > 0) {
-        this.currentMoveIndex -= 1;
-        this.$emit('move-selected', this.currentMoveIndex);
+      if (this.localMoveIndex >= 0) {
+        this.localMoveIndex -= 1;
+        this.$emit('move-selected', this.localMoveIndex);
       }
     },
     nextMove() {
-      if (this.currentMoveIndex < this.moves.length - 1) {
-        this.currentMoveIndex += 1;
-        this.$emit('move-selected', this.currentMoveIndex);
+      if (this.localMoveIndex < this.moves.length - 1) {
+        this.localMoveIndex += 1;
+        this.$emit('move-selected', this.localMoveIndex);
       }
     },
+    firstMove() {
+      this.localMoveIndex = -1;
+      this.$emit('move-selected', this.localMoveIndex);
+
+      // ⚡️ reset complet de l’échiquier
+      this.$emit('reset-board');
+    },
+    lastMove() {
+      this.localMoveIndex = this.moves.length - 1;
+      this.$emit('move-selected', this.localMoveIndex);
+    },
     selectMove(index) {
-      this.currentMoveIndex = index;
-      this.$emit('move-selected', index);
+      if (index < this.moves.length) {
+        this.localMoveIndex = index;
+        this.$emit('move-selected', index);
+      }
     },
     isSelectedMove(index) {
-      return this.currentMoveIndex === index;
+      return this.localMoveIndex === index;
     },
-  },
-  mounted() {
-    if (this.engineOn) {
-      this.evaluateAllMoves();
+    flipBoard() {
+      this.$emit('flip');
+    },
+    scrollToActiveMove() {
+      const activeElement = this.$el.querySelector('.move-item.active');
+      if (activeElement && this.$refs.movesList) {
+        activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    },
+    scrollToBottom() {
+      if (this.$refs.movesList) {
+        this.$refs.movesList.scrollTop = this.$refs.movesList.scrollHeight;
+      }
     }
   }
 };
 </script>
 
-
-
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
-.container {
+.frame-container {
   display: flex;
   flex-direction: column;
-  width: 400px;
-  height: 620px;
-  background: white;
+  width: 380px;
+  height: 605px;
+  background: #ffffff;
   border-radius: 15px;
-  margin-bottom: 145px;
-  color: #333;
-  font-size: 14px;
-  font-family: "Montserrat", sans-serif;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  font-family: 'Inter', sans-serif;
+  border: 3px solid #e0e0e0;
 }
 
-.container-top {
-  display: flex;
-  align-content: center;
-  justify-content: space-around;
-  width: 400px;
-  height: 50px;
-  background: #f0f0f0;
-  border-top-right-radius: 15px;
-  border-top-left-radius: 15px;
-  margin-bottom: 70px;
-  font-family: "Montserrat", sans-serif;
-}
-
-.analysis-header {
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-  border-bottom: 1px solid #dadada;
-}
-
-.notation-panel {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.notation-header {
+.header-section {
+  background: #f7f7f7;
+  padding: 18px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 2px solid #e6e6e6;
 }
 
-.notation-title {
-  font-size: 18px;
-  font-weight: bold;
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  letter-spacing: 0.5px;
 }
 
 .engine-toggle {
   display: flex;
   align-items: center;
-  color: #333;
+  gap: 8px;
+  cursor: pointer;
 }
 
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 34px;
+.engine-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 38px;
   height: 20px;
-  margin-left: 10px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 14px;
-  width: 14px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:checked + .slider:before {
-  transform: translateX(14px);
-}
-
-.slider.round {
+  background: #ddd;
   border-radius: 20px;
+  position: relative;
+  transition: background 0.2s;
 }
 
-.slider.round:before {
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #bbb;
   border-radius: 50%;
+  transition: all 0.2s;
 }
 
-.notation-content-wrapper {
-  flex-grow: 1;
+.engine-toggle input:checked + .toggle-slider {
+  background: #c4c4c4;
+}
+
+.engine-toggle input:checked + .toggle-slider::after {
+  transform: translateX(18px);
+  background: #888;
+}
+
+.toggle-label {
+  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.moves-section {
+  flex: 1;
+  overflow: hidden;
+  background: #fff;
+}
+
+.moves-list {
+  height: 100%;
   overflow-y: auto;
-  width: 400px;
-  font-size: 14px;
-  color: grey;
-  max-height: 300px; /* Adjust as needed */
+  padding: 12px 16px;
 }
 
-.notation-content {
-  border-collapse: collapse; /* Collapse borders */
-  width: 100%; /* Ensure table width */
+.moves-list::-webkit-scrollbar {
+  width: 8px;
 }
 
-.td-number {
-  width: 40px;
-  height: 5px; /* Set your desired height here */
-  font-size: 14px;
-  font-weight: 500;
-  border-right: 1px solid #dadada;
-  background: rgba(247,246,245,255);
-  font-family: "Montserrat", sans-serif;
+.moves-list::-webkit-scrollbar-track {
+  background: #f0f0f0;
 }
 
-.td-moves {
-  width: 100px;
-  height: 5px; /* Set your desired height here */
-  font-size: 14px;
-  font-weight: 500;
-  font-family: "Montserrat", sans-serif;
+.moves-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
 }
 
-.notation-content th,
-.notation-content td {
-  text-align: center; /* Center text in cells */
-  padding: 10px; /* Add padding for better appearance */
+.moves-list::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
 }
 
-.td-moves:hover {
-  font-weight: bold;
-  color: white; /* Change text color to white for better visibility */
-  background-color: #1b79cf; /* Grey background for emphasis */
-}
-
-.highlight {
-  color: black;
-  background-color: #c8def4; /* Highlight color on click */
-}
-
-.notation-content th {
-  background-color: #f7f7f7;
-  color: #333;
-}
-
-.notation-content tr {
-  height: 40px; /* Set a fixed height for rows */
-}
-
-.notation-content tr:nth-child(even) {
-  background-color: white;
-}
-
-.navigation {
+.empty-state {
   display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  font-size: 14px;
 }
 
-button {
-  background-color: #f7f7f7;
-  border: 1px solid #e0e0e0;
-  padding: 10px;
-  border-radius: 5px;
+.move-pair {
+  display: grid;
+  grid-template-columns: 35px 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 6px;
+  align-items: center;
+}
+
+.move-number {
+  color: #aaa;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: right;
+}
+
+.move-item {
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 6px;
   cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13px;
+  font-weight: 500;
   color: #333;
+  text-align: center;
+  border: 1px solid transparent;
 }
 
-button:hover {
-  background-color: #e0e0e0;
+.move-item:hover {
+  background: #eaeaea;
+  border-color: #dcdcdc;
+}
+
+.move-item.active {
+  background: #d0e7ff;
+  color: #003366;
+  border-color: #80bfff;
+}
+
+.footer-section {
+  background: #f7f7f7;
+  padding: 14px 16px;
+  border-top: 2px solid #e6e6e6;
+  display: flex;
+  gap: 8px;
+}
+
+.nav-btn {
+  flex: 1;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  color: #333;
+  font-size: 20px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 600;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #e6e6e6;
+  border-color: #ccc;
+  color: #000;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.flip-btn {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  color: #333;
+  font-size: 18px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 600;
+}
+
+.flip-btn:hover {
+  background: #e6e6e6;
+  border-color: #ccc;
+  color: #000;
 }
 </style>
+
+
 
 
 

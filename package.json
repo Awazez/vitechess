@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "beanheads-monorepo": "github:heunsig/beanheads-vue",
+    "beanheads-vue": "^1.2.1",
     "chess.js": "^1.0.0-beta.8",
     "vue": "^3.4.21",
     "vuedraggable": "^2.24.3"
