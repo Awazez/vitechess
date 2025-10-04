@@ -269,7 +269,8 @@ async function getHint() {
       return
     }
     console.log('🔍 Coup brut de l\'API:', data.bestMove)
-    const translatedMove = translateToFrench(translateUciToSan(data.bestMove))
+    const sanMove = translateUciToSan(data.bestMove)
+    const translatedMove = props.isEnglish ? translateToEnglish(sanMove) : translateToFrench(sanMove)
     console.log('🔍 Coup traduit:', translatedMove)
     hintMove.value = translatedMove
     message.value = ""
@@ -323,6 +324,14 @@ function translateToFrench(sanMove) {
   frenchMove = frenchMove.replace(/N/g, 'C')  // Cavalier
   
   return frenchMove
+}
+
+function translateToEnglish(sanMove) {
+  if (!sanMove) return sanMove
+  
+  // En anglais, pas de traduction nécessaire, mais on peut corriger les conflits
+  // Si jamais il y a des problèmes de traduction, on peut les gérer ici
+  return sanMove
 }
 
 // --- Détection de promotion ---
