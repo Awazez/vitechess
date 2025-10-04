@@ -125,6 +125,33 @@ async function handleMove(move) {
       return
     }
 
+    // Si c'est le coup suggéré par le hint, l'accepter même si isBest est false
+    if (hintMove.value) {
+      // Convertir le hint en UCI pour comparaison
+      const hintUci = translateSanToUci(hintMove.value)
+      if (hintUci && uciMove === hintUci) {
+        console.log('✅ Coup suggéré par le hint accepté:', uciMove)
+      } else if (data.isBest === false) {
+        // Sinon, valider normalement avec isBest
+        message.value = props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !"
+        messageType.value = "bad"
+        setTimeout(() => {
+          chessBoard.value?.loadFen(currentFen.value)
+          message.value = ""
+        }, 2000)
+        return
+      }
+    } else if (data.isBest === false) {
+      // Pas de hint, valider normalement
+      message.value = props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !"
+      messageType.value = "bad"
+      setTimeout(() => {
+        chessBoard.value?.loadFen(currentFen.value)
+        message.value = ""
+      }, 2000)
+      return
+    }
+
     message.value = props.isEnglish ? "✅ Well played!" : "✅ Bien joué !"
     messageType.value = "good"
     hintMove.value = ""
