@@ -153,6 +153,19 @@ async function handleMove(move) {
       setTimeout(() => {
         resetToInitialPosition()
       }, 1500)
+    } else if (isRookEndgamePromotion(uciMove)) {
+      // Pour les finales de tour, pause spéciale lors de la promotion
+      message.value = props.isEnglish ? "🎉 Promotion! The pawn becomes a queen!" : "🎉 Promotion ! Le pion devient une dame !"
+      messageType.value = "good"
+      
+      // Pause plus longue pour la promotion
+      setTimeout(() => {
+        message.value = props.isEnglish ? "🔄 Resetting position..." : "🔄 Remise en position..."
+        messageType.value = ""
+        setTimeout(() => {
+          resetToInitialPosition()
+        }, 1000)
+      }, 2000)
     }
   } catch (err) {
     message.value = props.isEnglish ? "❌ Network error: " + err.message : "❌ Erreur réseau : " + err.message
@@ -354,6 +367,35 @@ function isPawnPromotion(uciMove) {
   const isBlackPromotion = toRank === '1' && hasPromotion
   
   return isWhitePromotion || isBlackPromotion
+}
+
+function isRookEndgamePromotion(uciMove) {
+  if (!uciMove || uciMove.length < 4) return false
+  
+  // Format UCI: "e7e8q" (de e7 vers e8, promotion en dame)
+  const toRank = uciMove[3] // 4ème caractère = rangée de destination
+  const hasPromotion = uciMove.length > 4 // 5ème caractère = pièce de promotion
+  
+  // Vérifier si c'est une promotion (pion qui arrive sur la dernière rangée)
+  const isWhitePromotion = toRank === '8' && hasPromotion
+  const isBlackPromotion = toRank === '1' && hasPromotion
+  
+  // Détecter si c'est une finale de tour (présence de tours sur l'échiquier)
+  const chess = new Chess(currentFen.value)
+  const board = chess.board()
+  let hasRooks = false
+  
+  for (let row of board) {
+    for (let piece of row) {
+      if (piece && piece.type === 'r') {
+        hasRooks = true
+        break
+      }
+    }
+    if (hasRooks) break
+  }
+  
+  return (isWhitePromotion || isBlackPromotion) && hasRooks
 }
 
 // --- Utilitaires PGN ---
