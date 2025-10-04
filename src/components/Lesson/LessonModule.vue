@@ -81,7 +81,7 @@ async function handleMove(move) {
   const uciMove = move.uci || (move.from + move.to + (move.promotion || ""))
 
   try {
-    const response = await fetch("http://127.0.0.1:8080/move", {
+    const response = await fetch("http://57.128.191.150:8080/move", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
