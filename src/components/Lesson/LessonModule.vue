@@ -154,18 +154,11 @@ async function handleMove(move) {
         resetToInitialPosition()
       }, 1500)
     } else if (isRookEndgamePromotion(uciMove)) {
-      // Pour les finales de tour, pause spéciale lors de la promotion
+      // Pour les finales de tour, message de promotion mais continuer
       message.value = props.isEnglish ? "🎉 Promotion! The pawn becomes a queen!" : "🎉 Promotion ! Le pion devient une dame !"
       messageType.value = "good"
       
-      // Pause plus longue pour la promotion
-      setTimeout(() => {
-        message.value = props.isEnglish ? "🔄 Resetting position..." : "🔄 Remise en position..."
-        messageType.value = ""
-        setTimeout(() => {
-          resetToInitialPosition()
-        }, 1000)
-      }, 2000)
+      // Continuer le jeu normalement jusqu'au mat
     }
   } catch (err) {
     message.value = props.isEnglish ? "❌ Network error: " + err.message : "❌ Erreur réseau : " + err.message
