@@ -224,11 +224,20 @@ function stopDemo() {
   messageType.value = ""
 }
 
-// --- Indice (via Stockfish si tu veux le garder) ---
+// --- Indice (désactivé en production) ---
 async function getHint() {
   hintRequested.value = true
   message.value = props.isEnglish ? "🤔 Looking for the best move..." : "🤔 Recherche du meilleur coup..."
   messageType.value = ""
+  
+  // Désactiver les indices en production (serveur local non disponible)
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    message.value = props.isEnglish ? "❌ Hints not available in production" : "❌ Indices non disponibles en production"
+    messageType.value = "bad"
+    hintRequested.value = false
+    return
+  }
+  
   try {
     const response = await fetch("http://127.0.0.1:8080/hint", {
       method: "POST",
