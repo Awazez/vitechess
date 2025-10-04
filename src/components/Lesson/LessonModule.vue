@@ -277,9 +277,24 @@ function translateUciToSan(uciMove) {
     const from = uciMove.substring(0, 2)
     const to = uciMove.substring(2, 4)
     const promotion = uciMove.length > 4 ? uciMove[4] : undefined
+    
+    // Essayer de faire le coup
     const move = chess.move({ from, to, promotion })
-    return move?.san || uciMove
-  } catch {
+    if (move) {
+      return move.san
+    }
+    
+    // Si le coup échoue, essayer de déterminer manuellement
+    const piece = chess.get(from)
+    if (piece) {
+      const pieceType = piece.type.toUpperCase()
+      const pieceSymbol = pieceType === 'P' ? '' : pieceType
+      return pieceSymbol + to
+    }
+    
+    return uciMove
+  } catch (e) {
+    console.warn('Erreur traduction UCI:', e)
     return uciMove
   }
 }
