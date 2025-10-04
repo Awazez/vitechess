@@ -113,6 +113,7 @@ async function handleMove(move) {
   body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
 })
     const data = await response.json()
+    console.log('🔍 Réponse API move:', data)
 
     if (!response.ok || data.error) {
       message.value = data.error ? (props.isEnglish ? "❌ API Error: " + data.error : "❌ Erreur API : " + data.error) : (props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !")
