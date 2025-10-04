@@ -143,7 +143,7 @@ async function handleMove(move) {
       setTimeout(() => {
         resetToInitialPosition()
       }, 1500)
-    } else if (data.isPromotion || isPawnPromotion(uciMove)) {
+    } else if (isPawnPromotion(uciMove)) {
       // Pour les finales de pion, terminer dès qu'un pion est promu
       message.value = props.isEnglish ? "🎉 Well done! Pawn promoted!" : "🎉 Bravo ! Pion promu !"
       messageType.value = "good"
