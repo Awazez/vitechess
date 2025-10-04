@@ -53,8 +53,12 @@ export const useSpacedRepetitionStore = () => {
     try {
       const stored = localStorage.getItem('vitechess_spaced_repetition')
       if (stored) {
-        problems.value = JSON.parse(stored)
+        const parsed = JSON.parse(stored)
+        problems.value = Array.isArray(parsed) ? parsed : []
         console.log('📦 Chargé depuis localStorage:', problems.value.length, 'problèmes')
+      } else {
+        problems.value = []
+        console.log('📦 Aucune donnée dans localStorage, initialisation avec tableau vide')
       }
     } catch (e) {
       console.warn('Erreur lors du chargement:', e)

@@ -163,11 +163,11 @@
           </div>
         </div>
         
-        <div v-if="problemsToReviewToday.length > 0" class="lessons-to-review">
+        <div v-if="srProblemsToReviewToday.length > 0" class="lessons-to-review">
           <h4>{{ isEnglish ? 'Problems to review today' : 'Problèmes à réviser aujourd\'hui' }}</h4>
           <div class="review-list">
             <div 
-              v-for="problem in problemsToReviewToday" 
+              v-for="problem in srProblemsToReviewToday" 
               :key="problem.id"
               class="review-item"
               :class="{ 
@@ -722,7 +722,7 @@ setTimeout(() => {
   // Initialiser le système de répétition espacée après un délai
   initializeSpacedRepetition()
   // Mettre à jour les stats après un délai pour s'assurer que tout est chargé
-  updateStats()
+  // updateStats() supprimée - géré par le store
 }, 100)
 </script>
 
