@@ -827,32 +827,32 @@ function resetSpacedRepetition() {
   console.log('✅ Révisions espacées complètement vidées')
 }
 
-// Reset complet des révisions espacées
-resetSpacedRepetition()
+// Reset complet des révisions espacées - DÉSACTIVÉ pour préserver les données
+// resetSpacedRepetition()
 
-// S'assurer que tout est bien vide après le reset
-setTimeout(() => {
-  // Vérifier que le localStorage est bien vide
-  const stored = localStorage.getItem('vitechess_spaced_repetition')
-  if (stored) {
-    console.log('⚠️ Données encore présentes après reset, suppression forcée')
-    localStorage.removeItem('vitechess_spaced_repetition')
-  }
-  
-  // Forcer les variables à être vides
-  srProblemsToReview.value = []
-  srStats.value = {
-    total: 0,
-    reviewedToday: 0,
-    toReview: 0,
-    newToday: 0
-  }
-  
-  // Mettre à jour les statistiques
-  updateStats()
-  
-  console.log('✅ État final - Révisions espacées vides:', srProblemsToReview.value.length)
-}, 200)
+// S'assurer que tout est bien vide après le reset - DÉSACTIVÉ pour préserver les données
+// setTimeout(() => {
+//   // Vérifier que le localStorage est bien vide
+//   const stored = localStorage.getItem('vitechess_spaced_repetition')
+//   if (stored) {
+//     console.log('⚠️ Données encore présentes après reset, suppression forcée')
+//     localStorage.removeItem('vitechess_spaced_repetition')
+//   }
+//   
+//   // Forcer les variables à être vides
+//   srProblemsToReview.value = []
+//   srStats.value = {
+//     total: 0,
+//     reviewedToday: 0,
+//     toReview: 0,
+//     newToday: 0
+//   }
+//   
+//   // Mettre à jour les statistiques
+//   updateStats()
+//   
+//   console.log('✅ État final - Révisions espacées vides:', srProblemsToReview.value.length)
+// }, 200)
 
 
 // Initialiser la première leçon
