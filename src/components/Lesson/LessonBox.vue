@@ -22,6 +22,13 @@
       </button>
       
       <button 
+        class="flip-btn" 
+        @click="$emit('flip-board')"
+      >
+        🔄 {{ isEnglish ? 'Flip' : 'Retourner' }}
+      </button>
+      
+      <button 
         class="hint-btn" 
         @click="$emit('get-hint')" 
         :disabled="hintRequested || demoRunning"
@@ -33,12 +40,6 @@
         @click="$emit('reset-position')"
       >
         🔄 {{ isEnglish ? 'Reset' : 'Reset' }}
-      </button>
-      <button 
-        class="flip-btn" 
-        @click="$emit('flip-board')"
-      >
-        🔄 {{ isEnglish ? 'Flip' : 'Retourner' }}
       </button>
     </div>
   </div>
