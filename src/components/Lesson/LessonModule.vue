@@ -89,11 +89,11 @@ async function handleMove(move) {
   const uciMove = move.uci || (move.from + move.to + (move.promotion || ""))
 
   try {
-    const response = await fetch("http://57.128.191.150:8080/move",  {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
-    })
+    const response = await fetch("http://57.128.191.150:8080/move", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
+})
     const data = await response.json()
 
     if (!response.ok || data.isBest === false) {
