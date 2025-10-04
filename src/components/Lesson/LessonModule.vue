@@ -224,26 +224,15 @@ function stopDemo() {
   messageType.value = ""
 }
 
-// --- Indice (désactivé en production) ---
+// --- Indice (utilise l'API principale) ---
 async function getHint() {
   hintRequested.value = true
   message.value = props.isEnglish ? "🤔 Looking for the best move..." : "🤔 Recherche du meilleur coup..."
   messageType.value = ""
   
-  // Désactiver les indices en production (serveur local non disponible)
-  const isLocal = window.location.hostname === 'localhost' || 
-                  window.location.hostname === '127.0.0.1' ||
-                  window.location.hostname === ''
-  
-  if (!isLocal) {
-    message.value = props.isEnglish ? "❌ Hints not available in production" : "❌ Indices non disponibles en production"
-    messageType.value = "bad"
-    hintRequested.value = false
-    return
-  }
-  
   try {
-    const response = await fetch("http://127.0.0.1:8080/hint", {
+    // Utiliser l'API principale au lieu du serveur local
+    const response = await fetch("https://api.vitechess.com/hint", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fen: currentFen.value }),
