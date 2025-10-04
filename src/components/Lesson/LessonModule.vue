@@ -224,7 +224,7 @@ async function startDemo() {
 
     message.value = (step && typeof step === 'object' && step.comment)
       ? step.comment
-      : `▶️ Coup ${i + 1}: ${move.san}`
+      : `▶️ ${Math.floor(i / 2) + 1}${i % 2 === 0 ? '.' : '...'} ${move.san}`
     messageType.value = ""
     // Delay between moves; allow stop during wait
     const delayMs = 1000
