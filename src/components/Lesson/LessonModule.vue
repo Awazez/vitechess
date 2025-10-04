@@ -19,6 +19,7 @@
       @start-demo="startDemo"
       @stop-demo="stopDemo"
       @get-hint="getHint"
+      @reset-position="resetToInitialPosition"
     />
   </div>
 </template>

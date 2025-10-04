@@ -23,6 +23,12 @@
       >
         💡 {{ isEnglish ? 'Hint' : 'Indice' }}
       </button>
+      <button 
+        class="reset-btn" 
+        @click="$emit('reset-position')"
+      >
+        🔄 {{ isEnglish ? 'Reset' : 'Reset' }}
+      </button>
     </div>
   </div>
 </template>
@@ -40,7 +46,7 @@ defineProps({
   isEnglish: Boolean
 })
 
-defineEmits(["start-demo", "stop-demo", "get-hint"])
+defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position"])
 </script>
 
 <style scoped>
@@ -74,7 +80,7 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
   border-top: 2px solid var(--border-color);
 }
 
-.demo-btn, .hint-btn, .stop-btn {
+.demo-btn, .hint-btn, .stop-btn, .reset-btn {
   padding: 10px 18px;
   border-radius: 8px;
   font-size: 13px;
@@ -84,7 +90,7 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
   transition: all 0.15s;
 }
 
-.demo-btn:hover, .hint-btn:hover {
+.demo-btn:hover, .hint-btn:hover, .reset-btn:hover {
   background: #2dd4bf;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(64, 251, 220, 0.3);
@@ -103,7 +109,7 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
   border-color: #ef9a9a;
 }
 
-.hint-btn {
+.hint-btn, .reset-btn {
   background: #40fbdc;
   color: #000;
   border-color: #40fbdc;
