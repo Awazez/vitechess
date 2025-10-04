@@ -89,7 +89,7 @@ async function handleMove(move) {
   const uciMove = move.uci || (move.from + move.to + (move.promotion || ""))
 
   try {
-    const response = await fetch("http://api.vitechess/move", {
+    const response = await fetch("https://api.vitechess.com/move", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
