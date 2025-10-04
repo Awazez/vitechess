@@ -137,7 +137,7 @@ async function handleMove(move) {
       setTimeout(() => {
         resetToInitialPosition()
       }, 1500)
-    } else if (data.isPromotion || isPawnPromotion(move)) {
+    } else if (data.isPromotion || isPawnPromotion(uciMove)) {
       // Pour les finales de pion, terminer dès qu'un pion est promu
       message.value = props.isEnglish ? "🎉 Well done! Pawn promoted!" : "🎉 Bravo ! Pion promu !"
       messageType.value = "good"
@@ -326,13 +326,16 @@ function translateToFrench(sanMove) {
 }
 
 // --- Détection de promotion ---
-function isPawnPromotion(move) {
-  if (!move) return false
+function isPawnPromotion(uciMove) {
+  if (!uciMove || uciMove.length < 4) return false
+  
+  // Format UCI: "e7e8q" (de e7 vers e8, promotion en dame)
+  const toRank = uciMove[3] // 4ème caractère = rangée de destination
+  const hasPromotion = uciMove.length > 4 // 5ème caractère = pièce de promotion
   
   // Vérifier si c'est une promotion (pion qui arrive sur la dernière rangée)
-  const toRank = move.to[1]
-  const isWhitePromotion = move.color === 'w' && toRank === '8'
-  const isBlackPromotion = move.color === 'b' && toRank === '1'
+  const isWhitePromotion = toRank === '8' && hasPromotion
+  const isBlackPromotion = toRank === '1' && hasPromotion
   
   return isWhitePromotion || isBlackPromotion
 }
