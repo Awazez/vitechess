@@ -282,48 +282,15 @@ function translateUciToSan(uciMove) {
 function translateToFrench(sanMove) {
   if (!sanMove) return sanMove
   
-  // Dictionnaire de traduction des pièces
-  const pieceTranslations = {
-    'K': 'R',  // Roi
-    'Q': 'D',  // Dame
-    'R': 'T',  // Tour
-    'B': 'F',  // Fou
-    'N': 'C',  // Cavalier
-    'P': ''    // Pion (pas de lettre en français)
-  }
-  
-  // Dictionnaire de traduction des colonnes
-  const columnTranslations = {
-    'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e', 'f': 'f', 'g': 'g', 'h': 'h'
-  }
-  
-  // Dictionnaire de traduction des rangées
-  const rankTranslations = {
-    '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8'
-  }
-  
+  // Traduction simple et robuste
   let frenchMove = sanMove
   
-  // Traduire les pièces
-  for (const [english, french] of Object.entries(pieceTranslations)) {
-    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
-  }
-  
-  // Traduire les colonnes (a-h restent identiques)
-  for (const [english, french] of Object.entries(columnTranslations)) {
-    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
-  }
-  
-  // Traduire les rangées (1-8 restent identiques)
-  for (const [english, french] of Object.entries(rankTranslations)) {
-    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
-  }
-  
-  // Traduire les symboles spéciaux
-  frenchMove = frenchMove.replace(/x/g, 'x')  // Prise (reste identique)
-  frenchMove = frenchMove.replace(/\+/g, '+')  // Échec (reste identique)
-  frenchMove = frenchMove.replace(/#/g, '#')  // Échec et mat (reste identique)
-  frenchMove = frenchMove.replace(/=/g, '=')  // Promotion (reste identique)
+  // Traduire seulement les pièces principales
+  frenchMove = frenchMove.replace(/K/g, 'R')  // Roi
+  frenchMove = frenchMove.replace(/Q/g, 'D')  // Dame
+  frenchMove = frenchMove.replace(/R/g, 'T')  // Tour
+  frenchMove = frenchMove.replace(/B/g, 'F')  // Fou
+  frenchMove = frenchMove.replace(/N/g, 'C')  // Cavalier
   
   return frenchMove
 }
