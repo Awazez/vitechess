@@ -114,7 +114,7 @@ async function handleMove(move) {
 })
     const data = await response.json()
 
-    if (!response.ok || data.isBest === false) {
+    if (!response.ok || data.error) {
       message.value = data.error ? (props.isEnglish ? "❌ API Error: " + data.error : "❌ Erreur API : " + data.error) : (props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !")
       messageType.value = "bad"
       setTimeout(() => {
