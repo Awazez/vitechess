@@ -184,6 +184,11 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position", "flip-boar
   border-color: #fff;
 }
 
+.dark .flip-btn-small img {
+  filter: invert(1) brightness(1);
+}
+
+
 .white-turn {
   background: #fff;
   border: 2px solid #333;
