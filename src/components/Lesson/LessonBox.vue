@@ -34,6 +34,12 @@
       >
         🔄 {{ isEnglish ? 'Reset' : 'Reset' }}
       </button>
+      <button 
+        class="flip-btn" 
+        @click="$emit('flip-board')"
+      >
+        🔄 {{ isEnglish ? 'Flip' : 'Retourner' }}
+      </button>
     </div>
   </div>
 </template>
@@ -49,10 +55,11 @@ defineProps({
   demoRunning: Boolean,
   hintRequested: Boolean,
   isEnglish: Boolean,
-  isWhiteTurn: Boolean
+  isWhiteTurn: Boolean,
+  flipped: Boolean
 })
 
-defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position"])
+defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position", "flip-board"])
 </script>
 
 <style scoped>
@@ -115,7 +122,7 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position"])
   border-color: #ef9a9a;
 }
 
-.hint-btn, .reset-btn {
+.hint-btn, .reset-btn, .flip-btn {
   background: #40fbdc;
   color: #000;
   border-color: #40fbdc;

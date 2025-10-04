@@ -15,7 +15,7 @@
                   'possible-move': isPossibleMove(rowIndex, colIndex), 
                   'king-check': isKingInCheck(rowIndex, colIndex),
                   'last-move': isLastMove(rowIndex, colIndex),
-                  'dragging': draggedPiece && draggedPiece.row === rowIndex && draggedPiece.col === colIndex }]"
+                  'dragging': draggedPiece && ((flipped && draggedPiece.row === 7 - rowIndex && draggedPiece.col === 7 - colIndex) || (!flipped && draggedPiece.row === rowIndex && draggedPiece.col === colIndex)) }]"
               @click="handleSquareClick(rowIndex, colIndex)"
               @dragover.prevent
               @drop="handleDrop($event, rowIndex, colIndex)">
@@ -79,12 +79,22 @@ export default defineComponent({
   },
   computed: {
     displayedBoard() {
+      if (this.flipped) {
+        // Retourner le board horizontalement et verticalement
+        return this.board.slice().reverse().map(row => row.slice().reverse());
+      }
       return this.board;
     },
     displayedRowLabels() {
+      if (this.flipped) {
+        return this.rowLabels.slice();
+      }
       return this.rowLabels.slice().reverse();
     },
     displayedColumnLabels() {
+      if (this.flipped) {
+        return this.columnLabels.slice().reverse();
+      }
       return this.columnLabels;
     },
     isWhiteTurn() {
@@ -136,21 +146,25 @@ export default defineComponent({
       return colLabel + rowLabel;
     },
     handleSquareClick(rowIndex, colIndex) {
-      const piece = this.board[rowIndex][colIndex];
+      // Convertir les coordonnées affichées en coordonnées réelles du board
+      const realRow = this.flipped ? 7 - rowIndex : rowIndex;
+      const realCol = this.flipped ? 7 - colIndex : colIndex;
+      
+      const piece = this.board[realRow][realCol];
       const currentTurn = this.chess.turn() === 'w' ? 'w' : 'b';
 
       if (this.selectedPiece) {
         if (piece && piece[0] === currentTurn) {
-          this.selectedPiece = { row: rowIndex, col: colIndex };
-          this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+          this.selectedPiece = { row: realRow, col: realCol };
+          this.possibleMoves = this.getPossibleMoves(realRow, realCol);
         } else {
-          this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+          this.movePiece(this.selectedPiece.row, this.selectedPiece.col, realRow, realCol);
           this.selectedPiece = null;
           this.possibleMoves = [];
         }
       } else if (piece && piece[0] === currentTurn) {
-        this.selectedPiece = { row: rowIndex, col: colIndex };
-        this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+        this.selectedPiece = { row: realRow, col: realCol };
+        this.possibleMoves = this.getPossibleMoves(realRow, realCol);
       }
     },
     movePiece(fromRow, fromCol, toRow, toCol) {
@@ -205,7 +219,13 @@ export default defineComponent({
     },
 
     isSelected(row, col) {
-      return this.selectedPiece && this.selectedPiece.row === row && this.selectedPiece.col === col;
+      if (!this.selectedPiece) return false;
+      
+      // Convertir les coordonnées affichées en coordonnées réelles
+      const realRow = this.flipped ? 7 - row : row;
+      const realCol = this.flipped ? 7 - col : col;
+      
+      return this.selectedPiece.row === realRow && this.selectedPiece.col === realCol;
     },
     getPossibleMoves(row, col) {
       const square = this.getCoordinates(row, col);
@@ -217,11 +237,21 @@ export default defineComponent({
       });
     },
     isPossibleMove(row, col) {
-      return this.possibleMoves.some(move => move.row === row && move.col === col);
+      if (!this.possibleMoves.length) return false;
+      
+      // Convertir les coordonnées affichées en coordonnées réelles
+      const realRow = this.flipped ? 7 - row : row;
+      const realCol = this.flipped ? 7 - col : col;
+      
+      return this.possibleMoves.some(move => move.row === realRow && move.col === realCol);
     },
     isKingInCheck(rowIndex, colIndex) {
+      // Convertir les coordonnées affichées en coordonnées réelles
+      const realRow = this.flipped ? 7 - rowIndex : rowIndex;
+      const realCol = this.flipped ? 7 - colIndex : colIndex;
+      
       const kingPosition = this.findKingPosition(this.chess.turn());
-      if (kingPosition && kingPosition.row === rowIndex && kingPosition.col === colIndex) {
+      if (kingPosition && kingPosition.row === realRow && kingPosition.col === realCol) {
         return this.chess.inCheck();
       }
       return false;
@@ -239,8 +269,14 @@ export default defineComponent({
       return null;
     },
     isLastMove(row, col) {
-      return (this.lastMoveStart && this.lastMoveStart.row === row && this.lastMoveStart.col === col) ||
-             (this.lastMoveEnd && this.lastMoveEnd.row === row && this.lastMoveEnd.col === col);
+      if (!this.lastMoveStart && !this.lastMoveEnd) return false;
+      
+      // Convertir les coordonnées affichées en coordonnées réelles
+      const realRow = this.flipped ? 7 - row : row;
+      const realCol = this.flipped ? 7 - col : col;
+      
+      return (this.lastMoveStart && this.lastMoveStart.row === realRow && this.lastMoveStart.col === realCol) ||
+             (this.lastMoveEnd && this.lastMoveEnd.row === realRow && this.lastMoveEnd.col === realCol);
     },
     highlightLastMove(move) {
       if (move) {
@@ -258,15 +294,19 @@ export default defineComponent({
       }
     },
     handleDragStart(event, rowIndex, colIndex) {
-      const piece = this.board[rowIndex][colIndex];
+      // Convertir les coordonnées affichées en coordonnées réelles
+      const realRow = this.flipped ? 7 - rowIndex : rowIndex;
+      const realCol = this.flipped ? 7 - colIndex : colIndex;
+      
+      const piece = this.board[realRow][realCol];
       const currentTurn = this.chess.turn() === 'w' ? 'w' : 'b';
       
       if (piece && piece[0] === currentTurn) {
-        this.draggedPiece = { row: rowIndex, col: colIndex };
+        this.draggedPiece = { row: realRow, col: realCol };
         event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', `${rowIndex},${colIndex}`);
-        this.selectedPiece = { row: rowIndex, col: colIndex };
-        this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+        event.dataTransfer.setData('text/plain', `${realRow},${realCol}`);
+        this.selectedPiece = { row: realRow, col: realCol };
+        this.possibleMoves = this.getPossibleMoves(realRow, realCol);
       } else {
         event.preventDefault();
       }
@@ -280,16 +320,20 @@ export default defineComponent({
       event.preventDefault();
       if (!this.draggedPiece) return;
 
+      // Convertir les coordonnées affichées en coordonnées réelles
+      const realToRow = this.flipped ? 7 - toRow : toRow;
+      const realToCol = this.flipped ? 7 - toCol : toCol;
+
       const fromRow = this.draggedPiece.row;
       const fromCol = this.draggedPiece.col;
       
-      this.movePiece(fromRow, fromCol, toRow, toCol);
+      this.movePiece(fromRow, fromCol, realToRow, realToCol);
       this.draggedPiece = null;
       
-      const piece = this.board[toRow][toCol];
+      const piece = this.board[realToRow][realToCol];
       if (piece) {
-        this.selectedPiece = { row: toRow, col: toCol };
-        this.possibleMoves = this.getPossibleMoves(toRow, toCol);
+        this.selectedPiece = { row: realToRow, col: realToCol };
+        this.possibleMoves = this.getPossibleMoves(realToRow, realToCol);
       } else {
         this.selectedPiece = null;
         this.possibleMoves = [];

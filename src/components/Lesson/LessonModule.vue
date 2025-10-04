@@ -17,10 +17,12 @@
       :hintRequested="hintRequested"
       :isEnglish="isEnglish"
       :isWhiteTurn="isWhiteTurn"
+      :flipped="flipped"
       @start-demo="startDemo"
       @stop-demo="stopDemo"
       @get-hint="getHint"
       @reset-position="resetToInitialPosition"
+      @flip-board="flipBoard"
     />
   </div>
 </template>
@@ -92,6 +94,10 @@ function resetToInitialPosition() {
   chessBoard.value?.loadFen(currentFen.value)
   message.value = props.isEnglish ? "Your turn!" : "À toi de jouer !"
   messageType.value = "good"
+}
+
+function flipBoard() {
+  flipped.value = !flipped.value
 }
 
 // --- Gestion des coups utilisateur ---
