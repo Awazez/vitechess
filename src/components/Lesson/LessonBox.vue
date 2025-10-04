@@ -10,7 +10,13 @@
           @click="$emit('flip-board')"
           :title="isEnglish ? 'Flip board' : 'Retourner l\'échiquier'"
         >
-          <img src="/flip-2.svg?v=2" alt="Flip board" width="12" height="12" />
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/>
+            <path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"/>
+            <line x1="4" y1="12" x2="20" y2="12"/>
+            <polyline points="15 15 12 12 15 9"/>
+            <polyline points="9 9 12 12 9 15"/>
+          </svg>
         </button>
       </div>
     </h2>
