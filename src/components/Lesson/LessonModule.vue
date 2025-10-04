@@ -137,6 +137,16 @@ async function handleMove(move) {
       setTimeout(() => {
         resetToInitialPosition()
       }, 1500)
+    } else if (data.isPromotion || isPawnPromotion(move)) {
+      // Pour les finales de pion, terminer dès qu'un pion est promu
+      message.value = props.isEnglish ? "🎉 Well done! Pawn promoted!" : "🎉 Bravo ! Pion promu !"
+      messageType.value = "good"
+      // Émettre l'événement de leçon terminée
+      emit('lesson-completed')
+      // Retour à la position initiale après un court délai
+      setTimeout(() => {
+        resetToInitialPosition()
+      }, 1500)
     }
   } catch (err) {
     message.value = props.isEnglish ? "❌ Network error: " + err.message : "❌ Erreur réseau : " + err.message
@@ -313,6 +323,18 @@ function translateToFrench(sanMove) {
   frenchMove = frenchMove.replace(/N/g, 'C')  // Cavalier
   
   return frenchMove
+}
+
+// --- Détection de promotion ---
+function isPawnPromotion(move) {
+  if (!move) return false
+  
+  // Vérifier si c'est une promotion (pion qui arrive sur la dernière rangée)
+  const toRank = move.to[1]
+  const isWhitePromotion = move.color === 'w' && toRank === '8'
+  const isBlackPromotion = move.color === 'b' && toRank === '1'
+  
+  return isWhitePromotion || isBlackPromotion
 }
 
 // --- Utilitaires PGN ---
