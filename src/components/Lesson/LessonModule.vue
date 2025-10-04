@@ -329,8 +329,8 @@ function translateToFrench(sanMove) {
 function translateToEnglish(sanMove) {
   if (!sanMove) return sanMove
   
-  // En anglais, pas de traduction nécessaire, mais on peut corriger les conflits
-  // Si jamais il y a des problèmes de traduction, on peut les gérer ici
+  // En anglais, la notation standard est déjà correcte (K, Q, R, B, N)
+  // Pas de traduction nécessaire
   return sanMove
 }
 
