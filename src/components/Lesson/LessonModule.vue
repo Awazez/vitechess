@@ -108,10 +108,10 @@ async function handleMove(move) {
 
   try {
     const response = await fetch("https://api.vitechess.com/move", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
-})
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
+    })
     const data = await response.json()
     console.log('🔍 Réponse API move:', data)
 
@@ -125,25 +125,15 @@ async function handleMove(move) {
       return
     }
 
-    // Si c'est le coup suggéré par le hint, l'accepter même si isBest est false
-    if (hintMove.value) {
-      // Convertir le hint en UCI pour comparaison
-      const hintUci = translateSanToUci(hintMove.value)
-      if (hintUci && uciMove === hintUci) {
-        console.log('✅ Coup suggéré par le hint accepté:', uciMove)
-      } else if (data.isBest === false) {
-        // Sinon, valider normalement avec isBest
-        message.value = props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !"
-        messageType.value = "bad"
-        setTimeout(() => {
-          chessBoard.value?.loadFen(currentFen.value)
-          message.value = ""
-        }, 2000)
-        return
+    // Nouvelle logique avec l'API cohérente : isBest est maintenant fiable
+    if (data.isBest === false) {
+      // Coup médiocre - afficher l'évaluation si disponible
+      let errorMessage = props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !"
+      if (data.evaluation) {
+        const evalText = formatEvaluation(data.evaluation, props.isEnglish)
+        errorMessage += ` (${evalText})`
       }
-    } else if (data.isBest === false) {
-      // Pas de hint, valider normalement
-      message.value = props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !"
+      message.value = errorMessage
       messageType.value = "bad"
       setTimeout(() => {
         chessBoard.value?.loadFen(currentFen.value)
@@ -152,7 +142,13 @@ async function handleMove(move) {
       return
     }
 
-    message.value = props.isEnglish ? "✅ Well played!" : "✅ Bien joué !"
+    // Coup accepté - afficher l'évaluation si disponible
+    let successMessage = props.isEnglish ? "✅ Well played!" : "✅ Bien joué !"
+    if (data.evaluation) {
+      const evalText = formatEvaluation(data.evaluation, props.isEnglish)
+      successMessage += ` (${evalText})`
+    }
+    message.value = successMessage
     messageType.value = "good"
     hintMove.value = ""
     hintRequested.value = false
@@ -304,7 +300,7 @@ async function getHint() {
     const data = await response.json()
     console.log('🔍 Réponse API:', data)
     if (!response.ok) {
-      message.value = props.isEnglish ? "❌ Unable to get hint" : "❌ Impossible d'obtenir un indice"
+      message.value = data.error ? (props.isEnglish ? "❌ API Error: " + data.error : "❌ Erreur API : " + data.error) : (props.isEnglish ? "❌ Unable to get hint" : "❌ Impossible d'obtenir un indice")
       messageType.value = "bad"
       hintRequested.value = false
       return
@@ -314,7 +310,15 @@ async function getHint() {
     const translatedMove = props.isEnglish ? translateToEnglish(sanMove) : translateToFrench(sanMove)
     console.log('🔍 Coup traduit:', translatedMove)
     hintMove.value = translatedMove
-    message.value = ""
+    
+    // Afficher l'évaluation si disponible
+    if (data.evaluation) {
+      const evalText = formatEvaluation(data.evaluation, props.isEnglish)
+      message.value = props.isEnglish ? `💡 Hint: ${translatedMove} (${evalText})` : `💡 Indice : ${translatedMove} (${evalText})`
+    } else {
+      message.value = props.isEnglish ? `💡 Hint: ${translatedMove}` : `💡 Indice : ${translatedMove}`
+    }
+    messageType.value = "good"
   } catch {
     message.value = props.isEnglish ? "❌ Network error" : "❌ Erreur réseau"
     messageType.value = "bad"
@@ -373,6 +377,32 @@ function translateToEnglish(sanMove) {
   // En anglais, la notation standard est déjà correcte (K, Q, R, B, N)
   // Pas de traduction nécessaire
   return sanMove
+}
+
+// --- Formatage des évaluations ---
+function formatEvaluation(evaluation, isEnglish) {
+  if (!evaluation) return ""
+  
+  // Gérer les évaluations de mat
+  if (evaluation.includes("mate")) {
+    const mateIn = evaluation.replace("mate ", "")
+    return isEnglish ? `Mate in ${mateIn}` : `Mat en ${mateIn}`
+  }
+  
+  // Gérer les évaluations en centipawns
+  const centipawns = parseInt(evaluation)
+  if (isNaN(centipawns)) return evaluation
+  
+  // Convertir en avantage lisible
+  if (Math.abs(centipawns) < 10) {
+    return isEnglish ? "Equal" : "Égalité"
+  } else if (centipawns > 0) {
+    const advantage = (centipawns / 100).toFixed(1)
+    return isEnglish ? `+${advantage}` : `+${advantage}`
+  } else {
+    const disadvantage = (Math.abs(centipawns) / 100).toFixed(1)
+    return isEnglish ? `-${disadvantage}` : `-${disadvantage}`
+  }
 }
 
 // --- Détection de promotion ---
