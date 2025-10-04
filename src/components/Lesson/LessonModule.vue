@@ -222,9 +222,10 @@ async function startDemo() {
       chessBoard.value?.playMoveSound?.()
     }
 
+    const translatedMove = props.isEnglish ? translateToEnglish(move.san) : translateToFrench(move.san)
     message.value = (step && typeof step === 'object' && step.comment)
       ? step.comment
-      : `▶️ ${Math.floor(i / 2) + 1}${i % 2 === 0 ? '.' : '...'} ${move.san}`
+      : `▶️ ${Math.floor(i / 2) + 1}${i % 2 === 0 ? '.' : '...'} ${translatedMove}`
     messageType.value = ""
     // Delay between moves; allow stop during wait
     const delayMs = 1000
