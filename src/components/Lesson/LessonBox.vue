@@ -10,7 +10,7 @@
           @click="$emit('flip-board')"
           :title="isEnglish ? 'Flip board' : 'Retourner l\'échiquier'"
         >
-          <img src="/flip-2.svg" alt="Flip board" width="12" height="12" />
+          <img src="/flip-2.svg" alt="Flip board" width="16" height="16" />
         </button>
       </div>
     </h2>
@@ -154,13 +154,13 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position", "flip-boar
 }
 
 .flip-btn-small {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  border: 1px solid #40fbdc;
-  background: #40fbdc;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
   color: #000;
-  font-size: 12px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,8 +170,18 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position", "flip-boar
 }
 
 .flip-btn-small:hover {
-  background: #2dd4bf;
-  border-color: #2dd4bf;
+  background: rgba(64, 251, 220, 0.1);
+  border-color: #40fbdc;
+}
+
+/* Mode sombre */
+.dark .flip-btn-small {
+  color: #fff;
+}
+
+.dark .flip-btn-small:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
 }
 
 .white-turn {
