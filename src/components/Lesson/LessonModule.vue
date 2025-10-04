@@ -231,7 +231,11 @@ async function getHint() {
   messageType.value = ""
   
   // Désactiver les indices en production (serveur local non disponible)
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  const isLocal = window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1' ||
+                  window.location.hostname === ''
+  
+  if (!isLocal) {
     message.value = props.isEnglish ? "❌ Hints not available in production" : "❌ Indices non disponibles en production"
     messageType.value = "bad"
     hintRequested.value = false

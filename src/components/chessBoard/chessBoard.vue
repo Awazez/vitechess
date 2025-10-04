@@ -24,7 +24,7 @@
                 draggable="true"
                 @dragstart="handleDragStart($event, rowIndex, colIndex)"
                 @dragend="handleDragEnd">
-              <chessPiece :piece="square"/>
+              <chessPiece :piece="square" :selectedPieceSet="selectedPieceSet"/>
             </div>
             <div v-else
                 class="empty-square"
@@ -59,7 +59,8 @@ export default defineComponent({
     fen: { type: String, required: true },
     moves: { type: Array, default: () => [] },
     currentMoveIndex: { type: Number, default: -1 },
-    flipped: { type: Boolean, default: false }
+    flipped: { type: Boolean, default: false },
+    selectedPieceSet: { type: String, default: "cburnett" }
   },
   emits: ["move", "fen"],
 
