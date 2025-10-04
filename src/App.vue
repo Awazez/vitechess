@@ -703,6 +703,7 @@ const problemsToReviewToday = computed(() => {
 
 function toggleSpacedRepetition(lessonTitle) {
   console.log(`🔄 Toggle révisions pour: "${lessonTitle}"`)
+  console.log(`📋 srProblemsToReview.value avant:`, srProblemsToReview.value.length, srProblemsToReview.value.map(p => p.lessonTitle))
   const isInSR = isLessonInSpacedRepetition(lessonTitle)
   console.log(`📊 État actuel - Dans SR: ${isInSR}`)
   
@@ -756,14 +757,21 @@ function toggleSpacedRepetition(lessonTitle) {
   
   // Mettre à jour les statistiques directement
   updateStats()
+  
+  // Debug après modification
+  console.log(`📋 srProblemsToReview.value après:`, srProblemsToReview.value.length, srProblemsToReview.value.map(p => p.lessonTitle))
+  console.log(`📊 Stats après:`, srStats.value)
 }
 
 
 function updateStats() {
+  console.log('🔄 updateStats() appelée')
   // Lire directement depuis localStorage
   try {
     const stored = localStorage.getItem('vitechess_spaced_repetition')
+    console.log('📦 localStorage stored:', stored)
     const problems = stored ? JSON.parse(stored) : []
+    console.log('📋 problems parsed:', problems.length, problems.map(p => p.lessonTitle))
     
     const total = problems.length
     const today = new Date().toISOString().split('T')[0]
@@ -827,32 +835,35 @@ function resetSpacedRepetition() {
   console.log('✅ Révisions espacées complètement vidées')
 }
 
-// Reset complet des révisions espacées
-resetSpacedRepetition()
+// Reset complet des révisions espacées - DÉSACTIVÉ POUR TEST
+// resetSpacedRepetition()
 
-// S'assurer que tout est bien vide après le reset
-setTimeout(() => {
-  // Vérifier que le localStorage est bien vide
-  const stored = localStorage.getItem('vitechess_spaced_repetition')
-  if (stored) {
-    console.log('⚠️ Données encore présentes après reset, suppression forcée')
-    localStorage.removeItem('vitechess_spaced_repetition')
-  }
-  
-  // Forcer les variables à être vides
-  srProblemsToReview.value = []
-  srStats.value = {
-    total: 0,
-    reviewedToday: 0,
-    toReview: 0,
-    newToday: 0
-  }
-  
-  // Mettre à jour les statistiques
-  updateStats()
-  
-  console.log('✅ État final - Révisions espacées vides:', srProblemsToReview.value.length)
-}, 200)
+// Charger les données existantes au démarrage
+updateStats()
+
+// S'assurer que tout est bien vide après le reset - DÉSACTIVÉ POUR TEST
+// setTimeout(() => {
+//   // Vérifier que le localStorage est bien vide
+//   const stored = localStorage.getItem('vitechess_spaced_repetition')
+//   if (stored) {
+//     console.log('⚠️ Données encore présentes après reset, suppression forcée')
+//     localStorage.removeItem('vitechess_spaced_repetition')
+//   }
+//   
+//   // Forcer les variables à être vides
+//   srProblemsToReview.value = []
+//   srStats.value = {
+//     total: 0,
+//     reviewedToday: 0,
+//     toReview: 0,
+//     newToday: 0
+//   }
+//   
+//   // Mettre à jour les statistiques
+//   updateStats()
+//   
+//   console.log('✅ État final - Révisions espacées vides:', srProblemsToReview.value.length)
+// }, 200)
 
 
 // Initialiser la première leçon
