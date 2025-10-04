@@ -719,8 +719,8 @@ applyTheme()
 // Forcer l'application du thème immédiatement
 setTimeout(() => {
   applyTheme()
-  // Initialiser le système de répétition espacée après un délai
-  initializeSpacedRepetition()
+  // Initialiser le système de répétition espacée après un délai - DÉSACTIVÉ
+  // initializeSpacedRepetition()
   // Mettre à jour les stats après un délai pour s'assurer que tout est chargé
   // updateStats() supprimée - géré par le store
 }, 100)
