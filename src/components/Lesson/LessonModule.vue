@@ -244,19 +244,24 @@ async function getHint() {
   
   try {
     // Utiliser l'API principale au lieu du serveur local
+    console.log('🔍 Demande d\'indice avec FEN:', currentFen.value)
     const response = await fetch("https://api.vitechess.com/hint", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fen: currentFen.value }),
     })
     const data = await response.json()
+    console.log('🔍 Réponse API:', data)
     if (!response.ok) {
       message.value = props.isEnglish ? "❌ Unable to get hint" : "❌ Impossible d'obtenir un indice"
       messageType.value = "bad"
       hintRequested.value = false
       return
     }
-    hintMove.value = translateToFrench(translateUciToSan(data.bestMove))
+    console.log('🔍 Coup brut de l\'API:', data.bestMove)
+    const translatedMove = translateToFrench(translateUciToSan(data.bestMove))
+    console.log('🔍 Coup traduit:', translatedMove)
+    hintMove.value = translatedMove
     message.value = ""
   } catch {
     message.value = props.isEnglish ? "❌ Network error" : "❌ Erreur réseau"
