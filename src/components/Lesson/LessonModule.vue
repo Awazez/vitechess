@@ -16,6 +16,7 @@
       :demoRunning="demoRunning"
       :hintRequested="hintRequested"
       :isEnglish="isEnglish"
+      :isWhiteTurn="isWhiteTurn"
       @start-demo="startDemo"
       @stop-demo="stopDemo"
       @get-hint="getHint"
@@ -25,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue"
+import { ref, onMounted, watch, computed } from "vue"
 import { Chess } from "chess.js"
 import LessonBox from "./LessonBox.vue"
 import ChessBoard from "../chessBoard/chessBoard.vue"
@@ -58,6 +59,16 @@ const hintMove = ref("")
 const hintRequested = ref(false)
 
 const chessBoard = ref(null)
+
+// Computed property pour déterminer qui a le trait
+const isWhiteTurn = computed(() => {
+  try {
+    const chess = new Chess(currentFen.value)
+    return chess.turn() === 'w'
+  } catch (e) {
+    return true // Par défaut, blancs
+  }
+})
 
 // 🔥 Reset quand la prop initialFen change (changement de module)
 watch(() => props.initialFen, () => resetToInitialPosition())

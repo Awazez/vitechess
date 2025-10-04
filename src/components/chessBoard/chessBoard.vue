@@ -1,11 +1,5 @@
 <template>
   <div class="chess-board-container">
-    <!-- Indicateur de trait -->
-    <div class="turn-indicator" :class="{ 'white-turn': isWhiteTurn, 'black-turn': !isWhiteTurn }">
-      <div class="turn-dot"></div>
-      <span class="turn-text">{{ isWhiteTurn ? 'White to move' : 'Black to move' }}</span>
-    </div>
-    
     <div class="board-with-rows">
       <div class="row-labels">
         <div v-for="(rowLabel, index) in displayedRowLabels" :key="index" class="row-label">
@@ -358,44 +352,6 @@ export default defineComponent({
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-.turn-indicator {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-}
-
-.turn-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.white-turn .turn-dot {
-  background: #fff;
-  border: 2px solid #333;
-}
-
-.black-turn .turn-dot {
-  background: #333;
-  border: 2px solid #fff;
-}
-
-.turn-text {
-  color: #333;
-  font-size: 11px;
-  font-weight: 600;
-}
 
 .board-with-rows {
   display: flex;

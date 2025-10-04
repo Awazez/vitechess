@@ -1,6 +1,10 @@
 <template>
   <div class="lesson-box">
-    <h2>{{ title }}</h2>
+    <h2 class="lesson-title">
+      {{ title }}
+      <!-- Indicateur de trait à droite du titre -->
+      <div class="turn-indicator" :class="{ 'white-turn': isWhiteTurn, 'black-turn': !isWhiteTurn }"></div>
+    </h2>
 
     <TeacherBubble 
       :message="message" 
@@ -16,6 +20,7 @@
       <button v-else class="stop-btn" @click="$emit('stop-demo')">
         ⏹️ {{ isEnglish ? 'Stop demo' : 'Arrêter la démo' }}
       </button>
+      
       <button 
         class="hint-btn" 
         @click="$emit('get-hint')" 
@@ -43,7 +48,8 @@ defineProps({
   hintMove: String,
   demoRunning: Boolean,
   hintRequested: Boolean,
-  isEnglish: Boolean
+  isEnglish: Boolean,
+  isWhiteTurn: Boolean
 })
 
 defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position"])
@@ -114,6 +120,31 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position"])
   color: #000;
   border-color: #40fbdc;
   font-weight: 700;
+}
+
+.lesson-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.turn-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.white-turn {
+  background: #fff;
+  border: 2px solid #333;
+}
+
+.black-turn {
+  background: #333;
+  border: 2px solid #fff;
 }
 
 /* Responsive Design */
