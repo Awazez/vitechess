@@ -835,13 +835,13 @@ function resetSpacedRepetition() {
   console.log('✅ Révisions espacées complètement vidées')
 }
 
-// Reset complet des révisions espacées - DÉSACTIVÉ POUR TEST
+// Reset complet des révisions espacées - DÉSACTIVÉ pour préserver les données
 // resetSpacedRepetition()
 
 // Charger les données existantes au démarrage
 updateStats()
 
-// S'assurer que tout est bien vide après le reset - DÉSACTIVÉ POUR TEST
+// S'assurer que tout est bien vide après le reset - DÉSACTIVÉ pour préserver les données
 // setTimeout(() => {
 //   // Vérifier que le localStorage est bien vide
 //   const stored = localStorage.getItem('vitechess_spaced_repetition')
