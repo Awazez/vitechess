@@ -17,7 +17,7 @@
     <div class="speech-bubble" :class="type">
       <p v-if="message" class="lesson-message">{{ message }}</p>
       <div v-if="hintMove" class="hint-box">
-        <span class="hint-label">💡 Meilleur coup :</span>
+        <span class="hint-label">💡 {{ isEnglish ? 'Best move:' : 'Meilleur coup :' }}</span>
         <strong class="hint-move">{{ hintMove }}</strong>
       </div>
     </div>
@@ -28,7 +28,8 @@
 defineProps({
   message: String,
   type: String,
-  hintMove: String
+  hintMove: String,
+  isEnglish: Boolean
 })
 </script>
 
@@ -38,7 +39,7 @@ defineProps({
   align-items: flex-start;
   gap: 16px;
   padding: 20px;
-  background: #fff;
+  background: var(--bg-primary);
 }
 
 .teacher-avatar {
@@ -47,35 +48,37 @@ defineProps({
 
 .speech-bubble {
   flex: 1;
-  background: #f5f5f5;
+  background: var(--bg-secondary);
   border-radius: 10px;
   padding: 14px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   font-size: 14px;
   line-height: 1.5;
 }
 
 .speech-bubble.good {
-  background: #e8f5e9;
-  border-color: #81c784;
+  background: var(--success-color);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%);
+  border-color: var(--success-color);
 }
 
 .speech-bubble.bad {
-  background: #fff3e0;
-  border-color: #ffb74d;
+  background: var(--warning-color);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.2) 100%);
+  border-color: var(--warning-color);
 }
 
 .lesson-message {
   margin: 0;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .hint-box {
   margin-top: 10px;
   padding: 10px 12px;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -85,14 +88,71 @@ defineProps({
 .hint-label {
   font-size: 13px;
   font-weight: 500;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .hint-move {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   font-family: 'Courier New', monospace;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .teacher-container {
+    padding: 15px;
+    gap: 12px;
+  }
+  
+  .speech-bubble {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  
+  .lesson-message {
+    font-size: 13px;
+  }
+  
+  .hint-box {
+    padding: 8px 10px;
+  }
+  
+  .hint-label {
+    font-size: 12px;
+  }
+  
+  .hint-move {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .teacher-container {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .speech-bubble {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  
+  .lesson-message {
+    font-size: 12px;
+  }
+  
+  .hint-box {
+    padding: 6px 8px;
+  }
+  
+  .hint-label {
+    font-size: 11px;
+  }
+  
+  .hint-move {
+    font-size: 12px;
+  }
 }
 </style>
 

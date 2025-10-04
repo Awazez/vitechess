@@ -1,0 +1,7 @@
+[Event "Finales de tour : Exercice 1"]
+[Site "vitechess"]
+[Result "*"]
+[SetUp "1"]
+[FEN "1r3k2/R7/5PK1/8/8/8/8/8 w - - 0 1"]
+
+1. Rh7 Ke8 2. Rh8+ Kd7 3. Rxb8 Kc6 4. f7 Kd5 5. f8=Q Kd4 6. Rd8+ Kc4 7. Qd6 Kb3 8. Rc8 Ka2 9. Qb6 Ka1 10. Ra8# *
