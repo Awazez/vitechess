@@ -2,8 +2,17 @@
   <div class="lesson-box">
     <h2 class="lesson-title">
       {{ title }}
-      <!-- Indicateur de trait à droite du titre -->
-      <div class="turn-indicator" :class="{ 'white-turn': isWhiteTurn, 'black-turn': !isWhiteTurn }"></div>
+      <!-- Indicateur de trait et bouton flip à droite du titre -->
+      <div class="title-controls">
+        <div class="turn-indicator" :class="{ 'white-turn': isWhiteTurn, 'black-turn': !isWhiteTurn }"></div>
+        <button 
+          class="flip-btn-small" 
+          @click="$emit('flip-board')"
+          :title="isEnglish ? 'Flip board' : 'Retourner l\'échiquier'"
+        >
+          🔄
+        </button>
+      </div>
     </h2>
 
     <TeacherBubble 
@@ -19,13 +28,6 @@
       </button>
       <button v-else class="stop-btn" @click="$emit('stop-demo')">
         ⏹️ {{ isEnglish ? 'Stop demo' : 'Arrêter la démo' }}
-      </button>
-      
-      <button 
-        class="flip-btn" 
-        @click="$emit('flip-board')"
-      >
-        🔄 {{ isEnglish ? 'Flip' : 'Retourner' }}
       </button>
       
       <button 
@@ -137,12 +139,39 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position", "flip-boar
   gap: 12px;
 }
 
+.title-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .turn-indicator {
   width: 20px;
   height: 20px;
   border-radius: 50%;
   transition: all 0.3s ease;
   flex-shrink: 0;
+}
+
+.flip-btn-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid #40fbdc;
+  background: #40fbdc;
+  color: #000;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.flip-btn-small:hover {
+  background: #2dd4bf;
+  border-color: #2dd4bf;
 }
 
 .white-turn {
