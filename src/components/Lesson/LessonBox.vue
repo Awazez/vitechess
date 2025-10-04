@@ -157,8 +157,8 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position", "flip-boar
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 1px solid transparent;
-  background: transparent;
+  border: 2px solid #40fbdc;
+  background: #40fbdc;
   color: #000;
   font-size: 14px;
   display: flex;
@@ -170,22 +170,20 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position", "flip-boar
 }
 
 .flip-btn-small:hover {
-  background: rgba(64, 251, 220, 0.1);
-  border-color: #40fbdc;
+  background: #2dd4bf;
+  border-color: #2dd4bf;
 }
 
 /* Mode sombre */
 .dark .flip-btn-small {
-  color: #fff;
+  background: #40fbdc;
+  border-color: #40fbdc;
+  color: #000;
 }
 
 .dark .flip-btn-small:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #fff;
-}
-
-.dark .flip-btn-small img {
-  filter: invert(1) brightness(1);
+  background: #2dd4bf;
+  border-color: #2dd4bf;
 }
 
 
