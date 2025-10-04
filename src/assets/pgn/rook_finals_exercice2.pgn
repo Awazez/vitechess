@@ -1,0 +1,12 @@
+[Event "Finale de tour : Exercice 2"]
+[Site "ViteChess"]
+[Date "2024.01.01"]
+[Round "1"]
+[White "Défenseur"]
+[Black "Attaquant"]
+[Result "0-1"]
+[FEN "8/8/8/8/5pk1/1R6/r7/5K2 w - - 0 1"]
+[SetUp "1"]
+
+1. Rc3 {Position de Philidor : La tour se place derrière le roi pour la défense. C'est la clé de la défense !} Rh2 2. Kg1 {Le roi se place devant la tour pour éviter l'échec.} Rd2 3. Rc1 {Le roi maintient sa position défensive.} Kg3 4. Rf1 {Toujours en défense, le roi protège sa tour.} f3 5. Kh1 {La défense continue...} Rh2+ 6. Kg1 {Le roi défend toujours sa tour.} f2+ 7. Rxf2 {Position de défense parfaite !} Rxf2 8. Kh1 {Le roi peut maintenant se déplacer car la tour est protégée.} Rf1# { Black wins by checkmate. } 0-1
+

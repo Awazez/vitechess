@@ -5,6 +5,17 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:api": "vitest run test/api/",
+    "test:components": "vitest run test/components/",
+    "test:integration": "vitest run test/integration/",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview"
@@ -17,6 +28,7 @@
     "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.1",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/test-utils": "^2.4.6",
     "jsdom": "^24.1.0",

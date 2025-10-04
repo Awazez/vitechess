@@ -6,21 +6,22 @@
       :message="message" 
       :type="messageType"
       :hintMove="hintMove"
+      :isEnglish="isEnglish"
     />
 
     <div class="button-group">
       <button v-if="!demoRunning" class="demo-btn" @click="$emit('start-demo')">
-        🚀 Lancer la démo
+        🚀 {{ isEnglish ? 'Start demo' : 'Lancer la démo' }}
       </button>
       <button v-else class="stop-btn" @click="$emit('stop-demo')">
-        ⏹️ Arrêter la démo
+        ⏹️ {{ isEnglish ? 'Stop demo' : 'Arrêter la démo' }}
       </button>
       <button 
         class="hint-btn" 
         @click="$emit('get-hint')" 
         :disabled="hintRequested || demoRunning"
       >
-        💡 Indice
+        💡 {{ isEnglish ? 'Hint' : 'Indice' }}
       </button>
     </div>
   </div>
@@ -35,7 +36,8 @@ defineProps({
   messageType: String,
   hintMove: String,
   demoRunning: Boolean,
-  hintRequested: Boolean
+  hintRequested: Boolean,
+  isEnglish: Boolean
 })
 
 defineEmits(["start-demo", "stop-demo", "get-hint"])
@@ -44,11 +46,11 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
 <style scoped>
 .lesson-box {
   width: 605px;
-  background: #ffffff;
+  background: var(--bg-primary);
   border-radius: 15px;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  border: 3px solid #e0e0e0;
+  box-shadow: var(--shadow);
+  border: 3px solid var(--border-color);
   display: flex;
   flex-direction: column;
 }
@@ -56,11 +58,11 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
 .lesson-box h2 {
   margin: 0;
   padding: 18px 20px;
-  background: #f7f7f7;
-  color: #333;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 16px;
   font-weight: 600;
-  border-bottom: 2px solid #e6e6e6;
+  border-bottom: 2px solid var(--border-color);
 }
 
 .button-group {
@@ -68,8 +70,8 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
   gap: 8px;
   justify-content: flex-end;
   padding: 14px 16px;
-  background: #f7f7f7;
-  border-top: 2px solid #e6e6e6;
+  background: var(--bg-secondary);
+  border-top: 2px solid var(--border-color);
 }
 
 .demo-btn, .hint-btn, .stop-btn {
@@ -82,9 +84,17 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
   transition: all 0.15s;
 }
 
+.demo-btn:hover, .hint-btn:hover {
+  background: #2dd4bf;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(64, 251, 220, 0.3);
+}
+
 .demo-btn {
-  background: #f0f0f0;
-  color: #333;
+  background: #40fbdc;
+  color: #000;
+  border-color: #40fbdc;
+  font-weight: 700;
 }
 
 .stop-btn {
@@ -94,8 +104,55 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
 }
 
 .hint-btn {
-  background: #f0f0f0;
-  color: #333;
+  background: #40fbdc;
+  color: #000;
+  border-color: #40fbdc;
+  font-weight: 700;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .lesson-box {
+    width: 100%;
+    max-width: 605px;
+  }
+}
+
+@media (max-width: 768px) {
+  .lesson-box {
+    width: 100%;
+  }
+  
+  .lesson-box h2 {
+    font-size: 15px;
+    padding: 15px 18px;
+  }
+  
+  .button-group {
+    padding: 12px 14px;
+  }
+  
+  .demo-btn, .hint-btn, .stop-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lesson-box h2 {
+    font-size: 14px;
+    padding: 12px 15px;
+  }
+  
+  .button-group {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  
+  .demo-btn, .hint-btn, .stop-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
 }
 </style>
 

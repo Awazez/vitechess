@@ -4,6 +4,7 @@
       ref="chessBoard"
       :fen="currentFen"
       :flipped="flipped"
+      :selectedPieceSet="selectedPieceSet"
       @move="handleMove"
     />
 
@@ -14,6 +15,7 @@
       :hintMove="hintMove"
       :demoRunning="demoRunning"
       :hintRequested="hintRequested"
+      :isEnglish="isEnglish"
       @start-demo="startDemo"
       @stop-demo="stopDemo"
       @get-hint="getHint"
@@ -28,15 +30,21 @@ import LessonBox from "./LessonBox.vue"
 import ChessBoard from "../chessBoard/chessBoard.vue"
 
 const props = defineProps({
-  title: { type: String, default: "Mat élémentaire" },
+  title: { type: String, default: "Basic mate" },
   initialFen: { type: String, default: "8/8/3k4/8/4Q3/8/4K3/8 w - - 0 1" },
   scriptedMoves: {
     type: Array,
     default: () => []
   },
   // Optionnel: permet de fournir une partie PGN complète
-  scriptedPgn: { type: String, default: "" }
+  scriptedPgn: { type: String, default: "" },
+  // Set de pièces sélectionné
+  selectedPieceSet: { type: String, default: "cburnett" },
+  // Langue
+  isEnglish: { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['lesson-completed'])
 
 const currentFen = ref(props.initialFen)
 const flipped = ref(false)
@@ -70,7 +78,7 @@ function resetToInitialPosition() {
   }
   moves.value = []
   chessBoard.value?.loadFen(currentFen.value)
-  message.value = "À toi de jouer !"
+  message.value = props.isEnglish ? "Your turn!" : "À toi de jouer !"
   messageType.value = "good"
 }
 
@@ -81,7 +89,7 @@ async function handleMove(move) {
   const uciMove = move.uci || (move.from + move.to + (move.promotion || ""))
 
   try {
-    const response = await fetch("http://127.0.0.1:8080/move", {
+    const response = await fetch("http://57.128.191.150:8080/move", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
@@ -89,7 +97,7 @@ async function handleMove(move) {
     const data = await response.json()
 
     if (!response.ok || data.isBest === false) {
-      message.value = data.error ? "❌ Erreur API : " + data.error : "❌ Mauvais coup, essaie encore !"
+      message.value = data.error ? (props.isEnglish ? "❌ API Error: " + data.error : "❌ Erreur API : " + data.error) : (props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !")
       messageType.value = "bad"
       setTimeout(() => {
         chessBoard.value?.loadFen(currentFen.value)
@@ -98,7 +106,7 @@ async function handleMove(move) {
       return
     }
 
-    message.value = "✅ Bien joué !"
+    message.value = props.isEnglish ? "✅ Well played!" : "✅ Bien joué !"
     messageType.value = "good"
     hintMove.value = ""
     hintRequested.value = false
@@ -109,11 +117,17 @@ async function handleMove(move) {
     chessBoard.value?.highlightLastMove(move)
 
     if (data.isCheckmate) {
-      message.value = "🏆 Bravo, tu as donné mat !"
+      message.value = props.isEnglish ? "🏆 Well done, you checkmated!" : "🏆 Bravo, tu as donné mat !"
       messageType.value = "good"
+      // Émettre l'événement de leçon terminée
+      emit('lesson-completed')
+      // Retour à la position initiale après un court délai
+      setTimeout(() => {
+        resetToInitialPosition()
+      }, 1500)
     }
   } catch (err) {
-    message.value = "❌ Erreur réseau : " + err.message
+    message.value = props.isEnglish ? "❌ Network error: " + err.message : "❌ Erreur réseau : " + err.message
     messageType.value = "bad"
     setTimeout(() => {
       chessBoard.value?.loadFen(currentFen.value)
@@ -138,8 +152,8 @@ async function startDemo() {
     sequence = sanMoves
   }
   if (!sequence || sequence.length === 0) {
-    console.warn("🚫 Aucune démo scriptée pour ce module")
-    message.value = "🚫 Ce module n'a pas de démo scriptée."
+    console.warn("🚫 No scripted demo for this module")
+    message.value = props.isEnglish ? "🚫 This module has no scripted demo." : "🚫 Ce module n'a pas de démo scriptée."
     messageType.value = "bad"
     demoRunning.value = false
     return
@@ -205,15 +219,15 @@ async function startDemo() {
 function stopDemo() {
   demoAborted.value = true
   demoRunning.value = false
-  message.value = "⏹️ Démo arrêtée"
+  resetToInitialPosition()
+  message.value = props.isEnglish ? "⏹️ Demo stopped" : "⏹️ Démo arrêtée"
   messageType.value = ""
-  // Ne pas réinitialiser la position pour éviter l'effet de rollback
 }
 
 // --- Indice (via Stockfish si tu veux le garder) ---
 async function getHint() {
   hintRequested.value = true
-  message.value = "🤔 Recherche du meilleur coup..."
+  message.value = props.isEnglish ? "🤔 Looking for the best move..." : "🤔 Recherche du meilleur coup..."
   messageType.value = ""
   try {
     const response = await fetch("http://127.0.0.1:8080/hint", {
@@ -223,35 +237,81 @@ async function getHint() {
     })
     const data = await response.json()
     if (!response.ok) {
-      message.value = "❌ Impossible d'obtenir un indice"
+      message.value = props.isEnglish ? "❌ Unable to get hint" : "❌ Impossible d'obtenir un indice"
       messageType.value = "bad"
       hintRequested.value = false
       return
     }
-    hintMove.value = translateHintToFrench(data.bestMove)
+    hintMove.value = translateToFrench(translateUciToSan(data.bestMove))
     message.value = ""
   } catch {
-    message.value = "❌ Erreur réseau"
+    message.value = props.isEnglish ? "❌ Network error" : "❌ Erreur réseau"
     messageType.value = "bad"
     hintRequested.value = false
   }
 }
 
-function translateHintToFrench(uciMove) {
+function translateUciToSan(uciMove) {
   if (!uciMove || uciMove.length < 4) return uciMove
-  const from = uciMove.substring(0, 2)
-  const to = uciMove.substring(2, 4)
-  const promotion = uciMove.length > 4 ? uciMove[4] : ""
-  const chess = new Chess(currentFen.value)
-  const piece = chess.get(from)
-  if (!piece) return `${from} → ${to}`
+  try {
+    const chess = new Chess(currentFen.value)
+    const from = uciMove.substring(0, 2)
+    const to = uciMove.substring(2, 4)
+    const promotion = uciMove.length > 4 ? uciMove[4] : undefined
+    const move = chess.move({ from, to, promotion })
+    return move?.san || uciMove
+  } catch {
+    return uciMove
+  }
+}
 
-  const pieceNames = { k: "R", q: "D", r: "T", b: "F", n: "C", p: "" }
-  const pieceLetter = pieceNames[piece.type] || ""
-  let moveNotation = `${pieceLetter}${to}`
-  if (promotion) moveNotation += `=${pieceNames[promotion] || promotion}`
-
-  return moveNotation
+function translateToFrench(sanMove) {
+  if (!sanMove) return sanMove
+  
+  // Dictionnaire de traduction des pièces
+  const pieceTranslations = {
+    'K': 'R',  // Roi
+    'Q': 'D',  // Dame
+    'R': 'T',  // Tour
+    'B': 'F',  // Fou
+    'N': 'C',  // Cavalier
+    'P': ''    // Pion (pas de lettre en français)
+  }
+  
+  // Dictionnaire de traduction des colonnes
+  const columnTranslations = {
+    'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e', 'f': 'f', 'g': 'g', 'h': 'h'
+  }
+  
+  // Dictionnaire de traduction des rangées
+  const rankTranslations = {
+    '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8'
+  }
+  
+  let frenchMove = sanMove
+  
+  // Traduire les pièces
+  for (const [english, french] of Object.entries(pieceTranslations)) {
+    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
+  }
+  
+  // Traduire les colonnes (a-h restent identiques)
+  for (const [english, french] of Object.entries(columnTranslations)) {
+    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
+  }
+  
+  // Traduire les rangées (1-8 restent identiques)
+  for (const [english, french] of Object.entries(rankTranslations)) {
+    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
+  }
+  
+  // Traduire les symboles spéciaux
+  frenchMove = frenchMove.replace(/x/g, 'x')  // Prise (reste identique)
+  frenchMove = frenchMove.replace(/\+/g, '+')  // Échec (reste identique)
+  frenchMove = frenchMove.replace(/#/g, '#')  // Échec et mat (reste identique)
+  frenchMove = frenchMove.replace(/=/g, '=')  // Promotion (reste identique)
+  
+  return frenchMove
 }
 
 // --- Utilitaires PGN ---
@@ -277,9 +337,18 @@ function parsePgn(pgn) {
 onMounted(() => {
   // Charger la position initiale correcte au démarrage
   resetToInitialPosition()
-  message.value = "👋 Bienvenue ! Clique sur 🚀 pour lancer la démo."
-  messageType.value = "good"
+  updateWelcomeMessage()
 })
+
+// Réagir aux changements de langue
+watch(() => props.isEnglish, () => {
+  updateWelcomeMessage()
+})
+
+function updateWelcomeMessage() {
+  message.value = props.isEnglish ? "👋 Welcome! Click 🚀 to start the demo." : "👋 Bienvenue ! Clique sur 🚀 pour lancer la démo."
+  messageType.value = "good"
+}
 </script>
 
 <style scoped>
