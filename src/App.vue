@@ -233,6 +233,7 @@
 import { ref, computed } from "vue"
 import LessonModule from "./components/Lesson/LessonModule.vue"
 import { spacedRepetition } from "./services/spacedRepetition.js"
+import { useSpacedRepetitionStore } from "./stores/spacedRepetition.js"
 import kingRookVsKingPgn from "./assets/pgn/king_rook_vs_king.pgn?raw"
 import kingQueenVsKingPgn from "./assets/pgn/king_queen_vs_king.pgn?raw"
 import king2RookVsKingPgn from "./assets/pgn/king_2rook_vs_king.pgn?raw"
@@ -482,15 +483,13 @@ function applyTheme() {
   }
 }
 
-// Système de répétition espacée
-const srStats = ref({
-  total: 0,
-  reviewedToday: 0,
-  toReview: 0,
-  newToday: 0
-})
+// Système de répétition espacée - Store
+const spacedRepetitionStore = useSpacedRepetitionStore()
 
-const srProblemsToReview = ref([])
+// Raccourcis pour la compatibilité
+const srStats = computed(() => spacedRepetitionStore.stats.value)
+const srProblemsToReview = spacedRepetitionStore.problems
+const srProblemsToReviewToday = spacedRepetitionStore.problemsToReviewToday
 
 function initializeSpacedRepetition() {
   // Vérifier que lessons.value est un tableau
@@ -625,7 +624,7 @@ function recordSrCompletion(lessonTitle, hasErrors = false, timeSpent = 0) {
     console.log(`✅ Problème "${lessonTitle}" mis à jour - Prochaine révision: ${problem.nextReview}`)
     
     // Mettre à jour les statistiques
-    updateStats()
+    // updateStats() supprimée - géré par le store
     
   } catch (e) {
     console.warn('Erreur lors de l\'enregistrement de la performance:', e)
@@ -661,22 +660,7 @@ function backToPackages() {
 
 // Fonctions pour gérer les révisions espacées
 function isLessonInSpacedRepetition(lessonTitle) {
-  // Vérifier dans les problèmes à réviser
-  const inReview = srProblemsToReview.value.some(problem => problem.lessonTitle === lessonTitle)
-  
-  // Vérifier aussi dans le localStorage pour être sûr
-  try {
-    const stored = localStorage.getItem('vitechess_spaced_repetition')
-    if (stored) {
-      const problems = JSON.parse(stored)
-      const inStorage = problems.some(problem => problem.lessonTitle === lessonTitle)
-      return inReview || inStorage
-    }
-  } catch (e) {
-    console.warn('Erreur lors de la lecture du localStorage:', e)
-  }
-  
-  return inReview
+  return spacedRepetitionStore.isLessonInSpacedRepetition(lessonTitle)
 }
 
 function isProblemToReview(problem) {
@@ -689,181 +673,39 @@ function isProblemToReview(problem) {
 }
 
 // Propriété calculée pour filtrer les problèmes à réviser aujourd'hui
-const problemsToReviewToday = computed(() => {
-  return srProblemsToReview.value.filter(problem => {
-    // Inclure les nouvelles (jamais révisées)
-    if (problem.repetitions === 0) return true
-    
-    // Exclure les révisées aujourd'hui
-    const today = new Date().toISOString().split('T')[0]
-    const lastReviewDate = new Date(problem.lastReviewed || problem.createdAt).toISOString().split('T')[0]
-    return lastReviewDate !== today
-  })
-})
+// problemsToReviewToday maintenant géré par le store
 
 function toggleSpacedRepetition(lessonTitle) {
-  console.log(`🔄 Toggle révisions pour: "${lessonTitle}"`)
-  console.log(`📋 srProblemsToReview.value avant:`, srProblemsToReview.value.length, srProblemsToReview.value.map(p => p.lessonTitle))
-  const isInSR = isLessonInSpacedRepetition(lessonTitle)
-  console.log(`📊 État actuel - Dans SR: ${isInSR}`)
+  console.log(`🔄 Toggle spaced repetition pour: "${lessonTitle}"`)
+  
+  const isInSR = spacedRepetitionStore.isLessonInSpacedRepetition(lessonTitle)
+  console.log(`📊 État actuel: ${isInSR ? 'DANS' : 'PAS DANS'} spaced repetition`)
   
   if (isInSR) {
-    // Retirer de la répétition espacée - supprimer complètement
-    try {
-      const stored = localStorage.getItem('vitechess_spaced_repetition')
-      if (stored) {
-        const problems = JSON.parse(stored)
-        const filteredProblems = problems.filter(problem => problem.lessonTitle !== lessonTitle)
-        localStorage.setItem('vitechess_spaced_repetition', JSON.stringify(filteredProblems))
-        console.log(`📚 Retiré "${lessonTitle}" des révisions espacées`)
-      }
-    } catch (e) {
-      console.warn('Erreur lors de la suppression:', e)
-    }
+    // Retirer de la répétition espacée
+    console.log('➖ Retrait de spaced repetition')
+    spacedRepetitionStore.removeProblem(lessonTitle)
+    console.log('📊 Après retrait - Stats:', spacedRepetitionStore.stats.value)
   } else {
-    // Ajouter à la répétition espacée - créer un nouveau problème
-    if (!Array.isArray(lessons.value)) {
-      console.warn('⚠️ lessons.value n\'est pas un tableau:', lessons.value)
-      return
-    }
-    
-    const lesson = lessons.value.find(l => l.title === lessonTitle)
-    if (lesson) {
-      try {
-        const stored = localStorage.getItem('vitechess_spaced_repetition')
-        const existingProblems = stored ? JSON.parse(stored) : []
-        
-        // Créer un problème spécifique pour cette leçon
-        const problemId = `problem_${lessonTitle.replace(/\s+/g, '_').toLowerCase()}`
-        const newProblem = {
-          id: problemId,
-          lessonTitle: lessonTitle,
-          createdAt: new Date().toISOString(),
-          nextReview: new Date().toISOString(),
-          interval: 1,
-          repetitions: 0,
-          ease: 2.5
-        }
-        
-        // Ajouter le problème au système
-        const allProblems = [...existingProblems, newProblem]
-        localStorage.setItem('vitechess_spaced_repetition', JSON.stringify(allProblems))
-        console.log(`📚 Ajouté "${lessonTitle}" aux révisions espacées`)
-      } catch (e) {
-        console.warn('Erreur lors de l\'ajout:', e)
-      }
-    }
+    // Ajouter à la répétition espacée
+    console.log('➕ Ajout à spaced repetition')
+    spacedRepetitionStore.addProblem(lessonTitle)
+    console.log('📊 Après ajout - Stats:', spacedRepetitionStore.stats.value)
   }
   
-  // Mettre à jour les statistiques directement
-  updateStats()
-  
-  // Debug après modification
-  console.log(`📋 srProblemsToReview.value après:`, srProblemsToReview.value.length, srProblemsToReview.value.map(p => p.lessonTitle))
-  console.log(`📊 Stats après:`, srStats.value)
+  console.log('📊 Stats finales:', spacedRepetitionStore.stats.value)
+  console.log('📋 Problèmes à réviser:', spacedRepetitionStore.problems.value.length)
 }
 
 
-function updateStats() {
-  console.log('🔄 updateStats() appelée')
-  // Lire directement depuis localStorage
-  try {
-    const stored = localStorage.getItem('vitechess_spaced_repetition')
-    console.log('📦 localStorage stored:', stored)
-    const problems = stored ? JSON.parse(stored) : []
-    console.log('📋 problems parsed:', problems.length, problems.map(p => p.lessonTitle))
-    
-    const total = problems.length
-    const today = new Date().toISOString().split('T')[0]
-    
-    // Compter les nouvelles (créées aujourd'hui ET jamais révisées)
-    const newToday = problems.filter(problem => {
-      const problemDate = new Date(problem.createdAt).toISOString().split('T')[0]
-      return problemDate === today && problem.repetitions === 0
-    }).length
-    
-    // Compter les révisées aujourd'hui (terminées avec succès aujourd'hui)
-    const reviewedToday = problems.filter(problem => {
-      if (problem.repetitions === 0) return false // Pas encore révisée
-      const lastReviewDate = new Date(problem.lastReviewed || problem.createdAt).toISOString().split('T')[0]
-      return lastReviewDate === today
-    }).length
-    
-    // Compter les à réviser (déjà révisées mais pas aujourd'hui)
-    const toReview = problems.filter(problem => {
-      if (problem.repetitions === 0) return false // Pas encore révisée
-      const lastReviewDate = new Date(problem.lastReviewed || problem.createdAt).toISOString().split('T')[0]
-      return lastReviewDate !== today
-    }).length
-    
-    console.log(`📊 Stats détaillées - Total: ${total}, Nouvelles: ${newToday}, Révisées: ${reviewedToday}, À réviser: ${toReview}`)
-    
-    // Mettre à jour les variables réactives
-    srProblemsToReview.value = problems
-    srStats.value = {
-      total: total,
-      newToday: newToday,
-      reviewedToday: reviewedToday,
-      toReview: toReview
-    }
-    
-    console.log(`📊 Stats mises à jour - Total: ${total}, Nouvelles: ${newToday}`)
-    console.log('📋 Problèmes actuels:', problems.map(p => p.lessonTitle))
-  } catch (e) {
-    console.warn('Erreur lors de la mise à jour des stats:', e)
-    srProblemsToReview.value = []
-    srStats.value = { total: 0, newToday: 0 }
-  }
-}
+// updateStats() supprimée - maintenant gérée par le store
 
 
-function resetSpacedRepetition() {
-  // Reset complet des révisions espacées
-  localStorage.removeItem('vitechess_spaced_repetition')
-  console.log('🔄 Reset complet des révisions espacées')
-  
-  // Réinitialiser les variables à zéro
-  srStats.value = {
-    total: 0,
-    reviewedToday: 0,
-    toReview: 0,
-    newToday: 0
-  }
-  srProblemsToReview.value = []
-  
-  // NE PAS recréer les problèmes - laisser vide
-  console.log('✅ Révisions espacées complètement vidées')
-}
+// resetSpacedRepetition() supprimée - maintenant gérée par le store
 
-// Reset complet des révisions espacées - DÉSACTIVÉ pour préserver les données
-// resetSpacedRepetition()
+// Le store se charge automatiquement au démarrage
 
-// Charger les données existantes au démarrage
-updateStats()
-
-// S'assurer que tout est bien vide après le reset - DÉSACTIVÉ pour préserver les données
-// setTimeout(() => {
-//   // Vérifier que le localStorage est bien vide
-//   const stored = localStorage.getItem('vitechess_spaced_repetition')
-//   if (stored) {
-//     console.log('⚠️ Données encore présentes après reset, suppression forcée')
-//     localStorage.removeItem('vitechess_spaced_repetition')
-//   }
-//   
-//   // Forcer les variables à être vides
-//   srProblemsToReview.value = []
-//   srStats.value = {
-//     total: 0,
-//     reviewedToday: 0,
-//     toReview: 0,
-//     newToday: 0
-//   }
-//   
-//   // Mettre à jour les statistiques
-//   updateStats()
-//   
-//   console.log('✅ État final - Révisions espacées vides:', srProblemsToReview.value.length)
-// }, 200)
+// Ancien code de reset supprimé - maintenant géré par le store
 
 
 // Initialiser la première leçon
