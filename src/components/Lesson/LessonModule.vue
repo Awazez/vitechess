@@ -285,12 +285,12 @@ function translateToFrench(sanMove) {
   // Traduction simple et robuste
   let frenchMove = sanMove
   
-  // Traduire seulement les pièces principales
+  // Traduire seulement les pièces principales (ordre important)
   frenchMove = frenchMove.replace(/K/g, 'R')  // Roi
   frenchMove = frenchMove.replace(/Q/g, 'D')  // Dame
-  frenchMove = frenchMove.replace(/R/g, 'T')  // Tour
   frenchMove = frenchMove.replace(/B/g, 'F')  // Fou
   frenchMove = frenchMove.replace(/N/g, 'C')  // Cavalier
+  frenchMove = frenchMove.replace(/R/g, 'T')  // Tour (en dernier pour éviter les conflits)
   
   return frenchMove
 }
