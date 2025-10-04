@@ -10,7 +10,7 @@
           @click="$emit('flip-board')"
           :title="isEnglish ? 'Flip board' : 'Retourner l\'échiquier'"
         >
-          <img src="/flip-2.svg" alt="Flip board" width="12" height="12" />
+          <img src="/flip-2.svg?v=2" alt="Flip board" width="12" height="12" />
         </button>
       </div>
     </h2>
