@@ -555,81 +555,11 @@ function onLessonCompleted() {
   // Calculer le temps pris
   const timeSpent = problemStartTime.value ? Date.now() - problemStartTime.value : 0
   
-  // Enregistrer la performance dans le système Anki
-  recordSrCompletion(currentLesson.value.title, false, timeSpent) // Pas d'erreur
+  // Enregistrer la performance dans le système de spaced repetition
+  spacedRepetitionStore.recordCompletion(currentLesson.value.title, false, timeSpent)
 }
 
-function recordSrCompletion(lessonTitle, hasErrors = false, timeSpent = 0) {
-  console.log(`🎯 Leçon terminée: "${lessonTitle}", Erreurs: ${hasErrors}`)
-  
-  try {
-    // Lire les problèmes actuels
-    const stored = localStorage.getItem('vitechess_spaced_repetition')
-    console.log('📦 Données localStorage:', stored)
-    
-    if (!stored) {
-      console.log('⚠️ Aucune donnée de révision espacée trouvée')
-      return
-    }
-    
-    const problems = JSON.parse(stored)
-    console.log('📋 Problèmes trouvés:', problems.map(p => p.lessonTitle))
-    
-    // Recherche exacte d'abord
-    let problemIndex = problems.findIndex(p => p.lessonTitle === lessonTitle)
-    console.log(`🔍 Recherche exacte de "${lessonTitle}" - Index: ${problemIndex}`)
-    
-    // Si pas trouvé, recherche flexible (contient les mots-clés)
-    if (problemIndex === -1) {
-      const keywords = lessonTitle.toLowerCase().split(' ').filter(word => word.length > 2)
-      console.log(`🔍 Recherche flexible avec mots-clés:`, keywords)
-      
-      problemIndex = problems.findIndex(p => {
-        const titleLower = p.lessonTitle.toLowerCase()
-        return keywords.some(keyword => titleLower.includes(keyword))
-      })
-      console.log(`🔍 Recherche flexible - Index: ${problemIndex}`)
-    }
-    
-    if (problemIndex === -1) {
-      console.log(`⚠️ Problème "${lessonTitle}" non trouvé dans les révisions`)
-      console.log('📝 Titres disponibles:', problems.map(p => `"${p.lessonTitle}"`))
-      return
-    }
-    
-    console.log(`✅ Problème trouvé: "${problems[problemIndex].lessonTitle}"`)
-    
-    // Mettre à jour le problème
-    const problem = problems[problemIndex]
-    problem.repetitions = (problem.repetitions || 0) + 1
-    problem.lastReviewed = new Date().toISOString() // Date de dernière révision
-    
-    if (hasErrors) {
-      // En cas d'erreur, remettre à zéro
-      problem.interval = 1
-      problem.ease = Math.max(1.3, problem.ease - 0.2)
-    } else {
-      // En cas de succès, augmenter l'intervalle
-      problem.interval = problem.interval * problem.ease
-      problem.ease = Math.min(2.5, problem.ease + 0.1)
-    }
-    
-    // Calculer la prochaine révision
-    const nextReview = new Date()
-    nextReview.setDate(nextReview.getDate() + Math.ceil(problem.interval))
-    problem.nextReview = nextReview.toISOString()
-    
-    // Sauvegarder
-    localStorage.setItem('vitechess_spaced_repetition', JSON.stringify(problems))
-    console.log(`✅ Problème "${lessonTitle}" mis à jour - Prochaine révision: ${problem.nextReview}`)
-    
-    // Mettre à jour les statistiques
-    // updateStats() supprimée - géré par le store
-    
-  } catch (e) {
-    console.warn('Erreur lors de l\'enregistrement de la performance:', e)
-  }
-}
+// recordSrCompletion() supprimée - maintenant gérée par le store
 
 // Fonction pour réinitialiser les données de répétition espacée
 function resetAnkiData() {
