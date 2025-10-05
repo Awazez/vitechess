@@ -2,84 +2,93 @@
 
 ```yaml
 - generic [ref=e3]:
-  - button "🌙" [ref=e4] [cursor=pointer]
-  - button "🇫🇷" [ref=e5] [cursor=pointer]
-  - button "Cavalier" [ref=e6] [cursor=pointer]:
-    - img "Cavalier" [ref=e7] [cursor=pointer]
-  - generic [ref=e8]:
-    - generic [ref=e9]:
-      - generic [ref=e10]:
-        - generic [ref=e11]:
-          - generic [ref=e12]: "8"
-          - generic [ref=e13]: "7"
-          - generic [ref=e14]: "6"
-          - generic [ref=e15]: "5"
-          - generic [ref=e16]: "4"
-          - generic [ref=e17]: "3"
-          - generic [ref=e18]: "2"
-          - generic [ref=e19]: "1"
-        - generic [ref=e20]:
-          - generic [ref=e89]:
-            - img [ref=e98]
-            - img [ref=e107]
-          - img [ref=e142]
-      - generic [ref=e160]:
-        - generic [ref=e161]: a
-        - generic [ref=e162]: b
-        - generic [ref=e163]: c
-        - generic [ref=e164]: d
-        - generic [ref=e165]: e
-        - generic [ref=e166]: f
-        - generic [ref=e167]: g
-        - generic [ref=e168]: h
-    - generic [ref=e169]:
-      - 'heading "Mat élémentaire : Dame et roi contre roi" [level=2] [ref=e170]'
-      - generic [ref=e171]:
-        - img [ref=e173]
-        - paragraph [ref=e181]: 👋 Bienvenue ! Clique sur 🚀 pour lancer la démo.
-      - generic [ref=e182]:
-        - button "🚀 Lancer la démo" [ref=e183] [cursor=pointer]
-        - button "💡 Indice" [ref=e184] [cursor=pointer]
-  - generic [ref=e185]:
-    - generic [ref=e186]:
-      - generic [ref=e187]:
-        - img [ref=e190]
-        - generic [ref=e197]:
-          - heading "Modules disponibles" [level=3] [ref=e198]
-          - paragraph [ref=e199]: Choisis ton paquet de cours
-      - generic [ref=e200]:
-        - generic [ref=e201] [cursor=pointer]:
-          - generic [ref=e202] [cursor=pointer]: ♔
-          - generic [ref=e203] [cursor=pointer]:
-            - heading "Mats élémentaires" [level=4] [ref=e204] [cursor=pointer]
-            - paragraph [ref=e205] [cursor=pointer]: Les mats de base à connaître
-            - generic [ref=e207] [cursor=pointer]: 2 leçons
-        - generic [ref=e208] [cursor=pointer]:
-          - generic [ref=e209] [cursor=pointer]: ♜
-          - generic [ref=e210] [cursor=pointer]:
-            - heading "Finales de tour" [level=4] [ref=e211] [cursor=pointer]
-            - paragraph [ref=e212] [cursor=pointer]: Apprends les finales de tour essentielles
-            - generic [ref=e214] [cursor=pointer]: 3 leçons
-    - generic [ref=e215]:
-      - generic [ref=e216]:
-        - img "Coach" [ref=e219]
-        - generic [ref=e220]:
-          - heading "Révisions espacées" [level=3] [ref=e221]
-          - paragraph [ref=e222]: Reviens au bon moment pour ancrer tes finales
-      - generic [ref=e223]:
-        - generic [ref=e224]:
-          - generic [ref=e225]: "0"
-          - generic [ref=e226]: Total
-        - generic [ref=e227]:
-          - generic [ref=e228]: "0"
-          - generic [ref=e229]: Révisées
+  - generic [ref=e4]:
+    - img "Vitechess" [ref=e5]
+    - generic [ref=e6]: vitechess
+  - button "🌙" [ref=e7] [cursor=pointer]
+  - button "🇫🇷" [ref=e8] [cursor=pointer]
+  - button "Cavalier" [ref=e9] [cursor=pointer]:
+    - img "Cavalier" [ref=e10] [cursor=pointer]
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]: "8"
+          - generic [ref=e16]: "7"
+          - generic [ref=e17]: "6"
+          - generic [ref=e18]: "5"
+          - generic [ref=e19]: "4"
+          - generic [ref=e20]: "3"
+          - generic [ref=e21]: "2"
+          - generic [ref=e22]: "1"
+        - generic [ref=e23]:
+          - generic [ref=e92]:
+            - img [ref=e101]
+            - img [ref=e110]
+          - img [ref=e145]
+      - generic [ref=e163]:
+        - generic [ref=e164]: a
+        - generic [ref=e165]: b
+        - generic [ref=e166]: c
+        - generic [ref=e167]: d
+        - generic [ref=e168]: e
+        - generic [ref=e169]: f
+        - generic [ref=e170]: g
+        - generic [ref=e171]: h
+    - generic [ref=e172]:
+      - 'heading "Mat élémentaire : Dame et roi contre roi" [level=2] [ref=e173]'
+      - generic [ref=e174]:
+        - img [ref=e176]
+        - paragraph [ref=e184]: 👋 Bienvenue ! Clique sur 🚀 pour lancer la démo.
+      - generic [ref=e185]:
+        - button "🚀 Lancer la démo" [ref=e186] [cursor=pointer]
+        - button "💡 Indice" [ref=e187] [cursor=pointer]
+  - generic [ref=e188]:
+    - generic [ref=e189]:
+      - generic [ref=e190]:
+        - img [ref=e193]
+        - generic [ref=e200]:
+          - heading "Modules disponibles" [level=3] [ref=e201]
+          - paragraph [ref=e202]: Choisis ton paquet de cours
+      - generic [ref=e203]:
+        - generic [ref=e204] [cursor=pointer]:
+          - generic [ref=e205] [cursor=pointer]: ♔
+          - generic [ref=e206] [cursor=pointer]:
+            - heading "Mats élémentaires" [level=4] [ref=e207] [cursor=pointer]
+            - paragraph [ref=e208] [cursor=pointer]: Les mats de base à connaître
+            - generic [ref=e210] [cursor=pointer]: 2 leçons
+        - generic [ref=e211] [cursor=pointer]:
+          - generic [ref=e212] [cursor=pointer]: ♜
+          - generic [ref=e213] [cursor=pointer]:
+            - heading "Finales de tour" [level=4] [ref=e214] [cursor=pointer]
+            - paragraph [ref=e215] [cursor=pointer]: Apprends les finales de tour essentielles
+            - generic [ref=e217] [cursor=pointer]: 4 leçons
+        - generic [ref=e218] [cursor=pointer]:
+          - generic [ref=e219] [cursor=pointer]: ♟
+          - generic [ref=e220] [cursor=pointer]:
+            - heading "Finales de pion" [level=4] [ref=e221] [cursor=pointer]
+            - paragraph [ref=e222] [cursor=pointer]: Maîtrise les finales de pion fondamentales
+            - generic [ref=e224] [cursor=pointer]: 3 leçons
+    - generic [ref=e225]:
+      - generic [ref=e226]:
+        - img "Coach" [ref=e229]
         - generic [ref=e230]:
-          - generic [ref=e231]: "0"
-          - generic [ref=e232]: À réviser
-        - generic [ref=e233]:
-          - generic [ref=e234]: "0"
-          - generic [ref=e235]: Nouvelles
-      - generic [ref=e236]:
-        - generic [ref=e237]: 🎉
-        - paragraph [ref=e238]: Tout est à jour. Tu peux jouer ou apprendre une nouvelle finale.
+          - heading "Révisions espacées" [level=3] [ref=e231]
+          - paragraph [ref=e232]: Reviens au bon moment pour ancrer tes finales
+      - generic [ref=e233]:
+        - generic [ref=e234]:
+          - generic [ref=e235]: "0"
+          - generic [ref=e236]: Total
+        - generic [ref=e237]:
+          - generic [ref=e238]: "0"
+          - generic [ref=e239]: Révisées
+        - generic [ref=e240]:
+          - generic [ref=e241]: "0"
+          - generic [ref=e242]: À réviser
+        - generic [ref=e243]:
+          - generic [ref=e244]: "0"
+          - generic [ref=e245]: Nouvelles
+      - generic [ref=e246]:
+        - generic [ref=e247]: 🎉
+        - paragraph [ref=e248]: Tout est à jour. Tu peux jouer ou apprendre une nouvelle finale.
 ```

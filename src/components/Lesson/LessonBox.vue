@@ -1,6 +1,9 @@
 <template>
   <div class="lesson-box">
-    <h2>{{ title }}</h2>
+    <h2>
+      {{ title }}
+      <div class="turn-dot" :class="{ active: currentPlayer === 'w' }"></div>
+    </h2>
 
     <TeacherBubble 
       :message="message" 
@@ -23,24 +26,34 @@
       >
         💡 {{ isEnglish ? 'Hint' : 'Indice' }}
       </button>
+      <button 
+        class="reset-btn" 
+        @click="$emit('reset-lesson')"
+      >
+        🔄 {{ isEnglish ? 'Reset' : 'Recommencer' }}
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { watch } from "vue"
 import TeacherBubble from "./TeacherBubble.vue"
 
-defineProps({
+const props = defineProps({
   title: String,
   message: String,
   messageType: String,
   hintMove: String,
   demoRunning: Boolean,
   hintRequested: Boolean,
-  isEnglish: Boolean
+  isEnglish: Boolean,
+  currentPlayer: { type: String, default: 'w' }
 })
 
-defineEmits(["start-demo", "stop-demo", "get-hint"])
+// Debug logs supprimés pour éviter le spam
+
+defineEmits(["start-demo", "stop-demo", "get-hint", "reset-lesson"])
 </script>
 
 <style scoped>
@@ -74,7 +87,7 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
   border-top: 2px solid var(--border-color);
 }
 
-.demo-btn, .hint-btn, .stop-btn {
+.demo-btn, .hint-btn, .stop-btn, .reset-btn {
   padding: 10px 18px;
   border-radius: 8px;
   font-size: 13px;
@@ -132,7 +145,7 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
     padding: 12px 14px;
   }
   
-  .demo-btn, .hint-btn, .stop-btn {
+  .demo-btn, .hint-btn, .stop-btn, .reset-btn {
     padding: 8px 16px;
     font-size: 12px;
   }
@@ -149,10 +162,31 @@ defineEmits(["start-demo", "stop-demo", "get-hint"])
     gap: 6px;
   }
   
-  .demo-btn, .hint-btn, .stop-btn {
+  .demo-btn, .hint-btn, .stop-btn, .reset-btn {
     padding: 6px 12px;
     font-size: 11px;
   }
+}
+
+/* Indicateur de tour */
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.turn-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ccc;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.turn-dot.active {
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
 }
 </style>
 
