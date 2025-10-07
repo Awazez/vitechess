@@ -230,7 +230,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, watch, nextTick } from "vue"
 import LessonModule from "./components/Lesson/LessonModule.vue"
 import { spacedRepetition } from "./services/spacedRepetition.js"
 import kingRookVsKingPgn from "./assets/pgn/king_rook_vs_king.pgn?raw"
@@ -263,6 +263,7 @@ const kingPawnVsKingExercice2Headers = parsePgnHeaders(kingPawnVsKingExercice2Pg
 const philidorPositionHeaders = parsePgnHeaders(philidorPositionPgn)
 const rookFinalsExercice2Headers = parsePgnHeaders(rookFinalsExercice2Pgn)
 
+
 // Système de traduction des titres de leçons
 const lessonTranslations = {
   "Mat élémentaire : Dame et roi contre roi": "Basic mate: Queen and king vs king",
@@ -284,6 +285,12 @@ function translateLessonTitle(frenchTitle) {
   return lessonTranslations[frenchTitle] || frenchTitle
 }
 
+// Fonction pour traduire un titre de leçon (version réactive)
+function translateLessonTitleReactive(frenchTitle) {
+  if (!isEnglish.value) return frenchTitle
+  return lessonTranslations[frenchTitle] || frenchTitle
+}
+
 // Paquets de cours
 const coursePackages = computed(() => [
   {
@@ -294,12 +301,12 @@ const coursePackages = computed(() => [
     color: "#40fbdc",
     lessons: [
       {
-        title: translateLessonTitle(kqHeaders.title || "Mat élémentaire : Dame et roi contre roi"),
+        title: translateLessonTitleReactive(kqHeaders.title || "Mat élémentaire : Dame et roi contre roi"),
         scripted: kingQueenVsKingPgn,
         difficulty: isEnglish.value ? "Beginner" : "Débutant"
       },
       {
-        title: translateLessonTitle(twoRookHeaders.title || "Mat élémentaire : Deux tour et roi contre roi"),
+        title: translateLessonTitleReactive(twoRookHeaders.title || "Mat élémentaire : Deux tour et roi contre roi"),
         scripted: king2RookVsKingPgn,
         difficulty: isEnglish.value ? "Beginner" : "Débutant"
       }
@@ -313,22 +320,22 @@ const coursePackages = computed(() => [
     color: "#40fbdc",
     lessons: [
       {
-        title: translateLessonTitle(rookHeaders.title || "Mat élémentaire : tour et roi contre roi"),
+        title: translateLessonTitleReactive(rookHeaders.title || "Mat élémentaire : tour et roi contre roi"),
         scripted: kingRookVsKingPgn,
         difficulty: isEnglish.value ? "Beginner" : "Débutant"
       },
       {
-        title: translateLessonTitle(rookFinalsExercice1Headers.title || "Finales de tour : Exercice 1"),
+        title: translateLessonTitleReactive(rookFinalsExercice1Headers.title || "Finales de tour : Exercice 1"),
         scripted: rookFinalsExercice1Pgn,
         difficulty: isEnglish.value ? "Intermediate" : "Intermédiaire"
       },
       {
-        title: translateLessonTitle(rookFinalsExercice2Headers.title || "Finale de tour : Exercice 2"),
+        title: translateLessonTitleReactive(rookFinalsExercice2Headers.title || "Finale de tour : Exercice 2"),
         scripted: rookFinalsExercice2Pgn,
         difficulty: isEnglish.value ? "Intermediate" : "Intermédiaire"
       },
       {
-        title: translateLessonTitle(philidorPositionHeaders.title || "Position de Philidor - Défense classique"),
+        title: translateLessonTitleReactive(philidorPositionHeaders.title || "Position de Philidor - Défense classique"),
         scripted: philidorPositionPgn,
         difficulty: isEnglish.value ? "Advanced" : "Avancé"
       }
@@ -347,12 +354,12 @@ const coursePackages = computed(() => [
         difficulty: isEnglish.value ? "Beginner" : "Débutant"
       },
       {
-        title: translateLessonTitle(kingPawnVsKingExercice1Headers.title || "Finale de pion : exercice 1"),
+        title: translateLessonTitleReactive(kingPawnVsKingExercice1Headers.title || "Finale de pion : exercice 1"),
         scripted: kingPawnVsKingExercice1Pgn,
         difficulty: isEnglish.value ? "Intermediate" : "Intermédiaire"
       },
       {
-        title: translateLessonTitle(kingPawnVsKingExercice2Headers.title || "Finale de pion : exercice 2"),
+        title: translateLessonTitleReactive(kingPawnVsKingExercice2Headers.title || "Finale de pion : exercice 2"),
         scripted: kingPawnVsKingExercice2Pgn,
         difficulty: isEnglish.value ? "Intermediate" : "Intermédiaire"
       }
@@ -545,8 +552,8 @@ function startProblemTimer(problem) {
 
 
 
-// Fonction appelée quand une leçon est terminée avec succès
-function onLessonCompleted() {
+// Fonction appelée quand une leçon est terminée
+function onLessonCompleted(eventData) {
   // Arrêter le timer
   if (problemTimeout.value) {
     clearTimeout(problemTimeout.value)
@@ -556,8 +563,12 @@ function onLessonCompleted() {
   // Calculer le temps pris
   const timeSpent = problemStartTime.value ? Date.now() - problemStartTime.value : 0
   
+  // Utiliser hasErrors du paramètre de l'événement
+  const hasErrors = eventData?.hasErrors || false
+  console.log(`🎯 Fin de leçon - Type: ${eventData?.result}, Erreurs: ${hasErrors}`)
+  
   // Enregistrer la performance dans le système Anki
-  recordSrCompletion(currentLesson.value.title, false, timeSpent) // Pas d'erreur
+  recordSrCompletion(currentLesson.value.title, hasErrors, timeSpent)
 }
 
 function recordSrCompletion(lessonTitle, hasErrors = false, timeSpent = 0) {
@@ -602,15 +613,18 @@ function recordSrCompletion(lessonTitle, hasErrors = false, timeSpent = 0) {
     
     // Mettre à jour le problème
     const problem = problems[problemIndex]
-    problem.repetitions = (problem.repetitions || 0) + 1
-    problem.lastReviewed = new Date().toISOString() // Date de dernière révision
     
     if (hasErrors) {
-      // En cas d'erreur, remettre à zéro
+      // En cas d'erreur, NE PAS compter comme révisé
+      console.log('❌ Échec - Ne pas compter comme révisé')
       problem.interval = 1
       problem.ease = Math.max(1.3, problem.ease - 0.2)
+      // Ne pas mettre à jour lastReviewed ni incrémenter repetitions
     } else {
-      // En cas de succès, augmenter l'intervalle
+      // En cas de succès, compter comme révisé
+      console.log('✅ Succès - Compter comme révisé')
+      problem.repetitions = (problem.repetitions || 0) + 1
+      problem.lastReviewed = new Date().toISOString() // Date de dernière révision
       problem.interval = problem.interval * problem.ease
       problem.ease = Math.min(2.5, problem.ease + 0.1)
     }
@@ -711,7 +725,22 @@ function toggleSpacedRepetition(lessonTitle) {
     try {
       const stored = localStorage.getItem('vitechess_spaced_repetition')
       if (stored) {
-        const problems = JSON.parse(stored)
+        let problems = []
+        try {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed)) {
+            problems = parsed
+          } else {
+            console.warn('⚠️ Données de révision invalides, suppression du localStorage')
+            localStorage.removeItem('vitechess_spaced_repetition')
+            return
+          }
+        } catch (parseError) {
+          console.warn('⚠️ Erreur de parsing JSON, suppression du localStorage', parseError)
+          localStorage.removeItem('vitechess_spaced_repetition')
+          return
+        }
+        
         const filteredProblems = problems.filter(problem => problem.lessonTitle !== lessonTitle)
         localStorage.setItem('vitechess_spaced_repetition', JSON.stringify(filteredProblems))
         console.log(`📚 Retiré "${lessonTitle}" des révisions espacées`)
@@ -730,7 +759,22 @@ function toggleSpacedRepetition(lessonTitle) {
     if (lesson) {
       try {
         const stored = localStorage.getItem('vitechess_spaced_repetition')
-        const existingProblems = stored ? JSON.parse(stored) : []
+        let existingProblems = []
+        
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored)
+            if (Array.isArray(parsed)) {
+              existingProblems = parsed
+            } else {
+              console.warn('⚠️ Données de révision invalides, réinitialisation...')
+              localStorage.removeItem('vitechess_spaced_repetition')
+            }
+          } catch (parseError) {
+            console.warn('⚠️ Erreur de parsing JSON, réinitialisation...', parseError)
+            localStorage.removeItem('vitechess_spaced_repetition')
+          }
+        }
         
         // Créer un problème spécifique pour cette leçon
         const problemId = `problem_${lessonTitle.replace(/\s+/g, '_').toLowerCase()}`
@@ -763,7 +807,28 @@ function updateStats() {
   // Lire directement depuis localStorage
   try {
     const stored = localStorage.getItem('vitechess_spaced_repetition')
-    const problems = stored ? JSON.parse(stored) : []
+    let problems = []
+    
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          problems = parsed
+        } else {
+          console.warn('⚠️ Données de révision invalides (pas un tableau), réinitialisation...')
+          localStorage.removeItem('vitechess_spaced_repetition')
+        }
+      } catch (parseError) {
+        console.warn('⚠️ Erreur de parsing JSON, réinitialisation...', parseError)
+        localStorage.removeItem('vitechess_spaced_repetition')
+      }
+    }
+    
+    // Double vérification
+    if (!Array.isArray(problems)) {
+      console.warn('⚠️ problems n\'est toujours pas un tableau, forçage à []')
+      problems = []
+    }
     
     const total = problems.length
     const today = new Date().toISOString().split('T')[0]
@@ -859,6 +924,26 @@ setTimeout(() => {
 if (lessons.value.length > 0) {
   currentLesson.value = lessons.value[0]
 }
+
+// Watcher désactivé temporairement pour éviter la boucle infinie
+// Le titre sera traduit automatiquement par translateLessonTitleReactive
+// watch(isEnglish, async () => {
+//   if (currentLesson.value) {
+//     await nextTick() // Attendre que la réactivité se stabilise
+//     
+//     // Trouver la leçon correspondante avec le titre traduit
+//     const updatedLesson = lessons.value.find(l => {
+//       // Comparer par scripted content (plus fiable que le titre)
+//       return l.scripted === currentLesson.value.scripted
+//     })
+//     if (updatedLesson && updatedLesson.title !== currentLesson.value.title) {
+//       console.log('🔄 App.vue - Mise à jour du titre:', currentLesson.value.title, '→', updatedLesson.title)
+//       currentLesson.value = updatedLesson
+//     } else {
+//       console.log('ℹ️ App.vue - Aucune mise à jour nécessaire pour:', currentLesson.value.title)
+//     }
+//   }
+// })
 
 // Appliquer le thème au démarrage
 applyTheme()

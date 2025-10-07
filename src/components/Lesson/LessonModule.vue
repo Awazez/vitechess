@@ -6,25 +6,28 @@
       :flipped="flipped"
       :selectedPieceSet="selectedPieceSet"
       @move="handleMove"
+      @fen="handleFen"
     />
 
     <LessonBox
-      :title="title"
+      :title="translatedTitle"
       :message="message"
       :messageType="messageType"
       :hintMove="hintMove"
       :demoRunning="demoRunning"
       :hintRequested="hintRequested"
       :isEnglish="isEnglish"
+      :currentPlayer="currentPlayer"
       @start-demo="startDemo"
       @stop-demo="stopDemo"
       @get-hint="getHint"
+      @reset-lesson="resetToInitialPosition"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue"
+import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue"
 import { Chess } from "chess.js"
 import LessonBox from "./LessonBox.vue"
 import ChessBoard from "../chessBoard/chessBoard.vue"
@@ -32,20 +35,24 @@ import ChessBoard from "../chessBoard/chessBoard.vue"
 const props = defineProps({
   title: { type: String, default: "Basic mate" },
   initialFen: { type: String, default: "8/8/3k4/8/4Q3/8/4K3/8 w - - 0 1" },
-  scriptedMoves: {
-    type: Array,
-    default: () => []
-  },
-  // Optionnel: permet de fournir une partie PGN complète
+  scriptedMoves: { type: Array, default: () => [] },
   scriptedPgn: { type: String, default: "" },
-  // Set de pièces sélectionné
   selectedPieceSet: { type: String, default: "cburnett" },
-  // Langue
-  isEnglish: { type: Boolean, default: false }
+  isEnglish: { type: Boolean, default: false },
+  apiUrl: { type: String, default: "http://127.0.0.1:8082/analyze" },
+  demoDelay: { type: Number, default: 1000 },
+  analysisDepth: { type: Number, default: 12 },
+  apiTimeout: { type: Number, default: 5000 }
 })
 
-const emit = defineEmits(['lesson-completed'])
+const emit = defineEmits(['lesson-completed', 'error'])
 
+// Le titre est déjà traduit par App.vue, on le passe directement
+const translatedTitle = computed(() => {
+  return props.title
+})
+
+// État
 const currentFen = ref(props.initialFen)
 const flipped = ref(false)
 const moves = ref([])
@@ -55,95 +62,479 @@ const message = ref("")
 const messageType = ref("")
 const hintMove = ref("")
 const hintRequested = ref(false)
-
 const chessBoard = ref(null)
+const currentPlayer = ref("w")
 
-// 🔥 Reset quand la prop initialFen change (changement de module)
-watch(() => props.initialFen, () => resetToInitialPosition())
+// Gestion des requêtes en cours pour éviter les race conditions
+let currentMoveEvaluation = null
+let currentAutoResponse = null
+let abortController = null
+let pendingTimeouts = new Set()
 
-// 🔥 Reset aussi quand le PGN change (changement de module PGN)
-watch(() => props.scriptedPgn, () => resetToInitialPosition())
+// Traductions centralisées
+const t = computed(() => ({
+  yourTurn: props.isEnglish ? "Your turn!" : "À toi de jouer !",
+  welcome: props.isEnglish ? "👋 Welcome! Click 🚀 to start the demo." : "👋 Bienvenue ! Clique sur 🚀 pour lancer la démo.",
+  wellDone: props.isEnglish ? "✅ Well played" : "✅ Bien joué",
+  blunder: props.isEnglish ? "💥 Blunder" : "💥 Gaffe",
+  lookingForMove: props.isEnglish ? "🤔 Looking for the best move..." : "🤔 Recherche du meilleur coup...",
+  noHint: props.isEnglish ? "❌ Unable to get hint" : "❌ Impossible d'obtenir un indice",
+  networkError: props.isEnglish ? "❌ Network error" : "❌ Erreur réseau",
+  demoStopped: props.isEnglish ? "⏹️ Demo stopped" : "⏹️ Démo arrêtée",
+  noScriptedDemo: props.isEnglish ? "🚫 This module has no scripted demo." : "🚫 Ce module n'a pas de démo scriptée.",
+  checkmate: props.isEnglish ? "♔ Checkmate!" : "♔ Échec et mat !",
+  stalemate: props.isEnglish ? "♟️ Stalemate" : "♟️ Pat",
+  draw: props.isEnglish ? "🤝 Draw" : "🤝 Nulle",
+  invalidFen: props.isEnglish ? "⚠️ Invalid position" : "⚠️ Position invalide",
+  apiTimeout: props.isEnglish ? "⏱️ Analysis timeout" : "⏱️ Délai d'analyse dépassé",
+  promotion: props.isEnglish ? "♛ Promotion!" : "♛ Promotion !"
+}))
+
+// Watchers avec reset
+watch(() => props.initialFen, resetToInitialPosition)
+watch(() => props.scriptedPgn, resetToInitialPosition)
+watch(() => props.isEnglish, updateWelcomeMessage)
+
+// Validation de FEN
+function isValidFen(fen) {
+  try {
+    new Chess(fen)
+    return true
+  } catch {
+    return false
+  }
+}
 
 function resetToInitialPosition() {
-  // Si un PGN est fourni et contient une FEN, elle prime
+  // Annuler les requêtes en cours
+  cancelPendingRequests()
+  
+  // Déterminer la FEN initiale (PGN prioritaire)
+  let targetFen = props.initialFen
+  
   if (props.scriptedPgn) {
     const parsed = parsePgn(props.scriptedPgn)
-    if (parsed && parsed.fen) {
-      currentFen.value = parsed.fen
-    } else {
-      currentFen.value = props.initialFen
-    }
-  } else {
-    currentFen.value = props.initialFen
+    targetFen = parsed?.fen || props.initialFen
   }
+  
+  // Validation de la FEN
+  if (!isValidFen(targetFen)) {
+    console.error('❌ Invalid FEN:', targetFen)
+    message.value = t.value.invalidFen
+    messageType.value = "bad"
+    targetFen = '8/8/8/8/8/8/8/8 w - - 0 1' // Position vide comme fallback
+  }
+  
+  currentFen.value = targetFen
   moves.value = []
   chessBoard.value?.loadFen(currentFen.value)
-  message.value = props.isEnglish ? "Your turn!" : "À toi de jouer !"
+  message.value = t.value.yourTurn
   messageType.value = "good"
 }
 
-// --- Gestion des coups utilisateur ---
+
+function cancelPendingRequests() {
+  // Annuler les évaluations en cours
+  currentMoveEvaluation = null
+  currentAutoResponse = null
+  
+  // Annuler la requête HTTP en cours
+  if (abortController) {
+    abortController.abort()
+    abortController = null
+  }
+  
+  // Nettoyer tous les timeouts
+  pendingTimeouts.forEach(timeout => clearTimeout(timeout))
+  pendingTimeouts.clear()
+}
+
+// Variable pour suivre les promotions
+let lastPromotionSquare = ref(null)
+
+// Gestion des coups utilisateur
 async function handleMove(move) {
-  if (demoRunning.value) return
-  if (!move?.from || !move?.to) return
-  const uciMove = move.uci || (move.from + move.to + (move.promotion || ""))
+  if (demoRunning.value) {
+    console.log('⏸️ Coup ignoré: démo en cours')
+    return
+  }
+  if (!move?.from || !move?.to) {
+    console.warn('⚠️ Coup invalide reçu:', move)
+    return
+  }
+  
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('🎮 NOUVEAU COUP:', move.san)
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  
+  const preMoveFen = currentFen.value
+  console.log('📋 FEN avant coup:', preMoveFen)
+  
+  // Calculer la FEN après le coup
+  let afterFen = preMoveFen
+  let hasPromotion = false
+  try {
+    const tmp = new Chess(preMoveFen)
+    const result = tmp.move({ from: move.from, to: move.to, promotion: move.promotion })
+    if (!result) {
+      console.error('❌ Invalid move')
+      return
+    }
+    afterFen = tmp.fen()
+    console.log('📋 FEN après coup:', afterFen)
+
+    // Promotion: afficher le message mais attendre la réponse de l'ordi
+    if (result.promotion) {
+      hasPromotion = true
+      lastPromotionSquare.value = move.to
+      console.log(`♛ Promotion détectée sur ${move.to} - attente de la réponse de l'adversaire`)
+      message.value = t.value.promotion
+      messageType.value = 'good'
+      // Synchroniser l'état courant
+      currentFen.value = afterFen
+      chessBoard.value?.loadFen(currentFen.value)
+    }
+  } catch (err) {
+    handleError('Move calculation error', err)
+    return
+  }
+
+  // Ne PAS réinitialiser l'état ici, car on veut garder le message précédent
+  // L'évaluation du coup mettra à jour le message si nécessaire
+  hintMove.value = ""
+  hintRequested.value = false
+  chessBoard.value?.highlightLastMove(move)
+
+  // Évaluation ET réponse automatique en parallèle
+  const sideToMove = preMoveFen.split(" ")[1]?.toLowerCase()
+  console.log(`🎯 Tour du joueur: ${sideToMove === 'w' ? 'Blancs' : 'Noirs'}`)
+  
+  if (sideToMove === "w") {
+    console.log('⚪ Coup des Blancs → Évaluation + Réponse de l\'ordi')
+    
+    // Si pas de promotion, évaluer le coup normalement
+    if (!hasPromotion) {
+      await evaluatePlayerMove(preMoveFen, move.san)
+      console.log(`⏱️ Attente ${props.feedbackDelay}ms pour afficher le feedback...`)
+      await wait(props.feedbackDelay)
+    } else {
+      // Si promotion, attendre un peu pour afficher le message
+      console.log(`⏱️ Attente ${props.feedbackDelay}ms pour afficher la promotion...`)
+      await wait(props.feedbackDelay)
+    }
+    
+    console.log('🤖 Tour de l\'ordinateur...')
+    await playEngineResponse(afterFen, hasPromotion)
+  } else {
+    console.log('⚫ Coup des Noirs → Juste réponse de l\'ordi')
+    // Pour les Noirs : juste laisser l'ordi jouer
+    await playEngineResponse(afterFen, hasPromotion)
+  }
+  
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
+}
+
+async function evaluatePlayerMove(fen, sanMove) {
+  const sideToMove = fen.split(" ")[1]?.toLowerCase()
+  if (sideToMove !== "w") {
+    console.log('⏭️ Pas d\'évaluation pour les coups noirs')
+    return
+  }
+
+  // ID unique pour cette évaluation
+  const evalId = {}
+  currentMoveEvaluation = evalId
+
+  // Pas de placeholder: on attend la réponse
+  console.log(`🔍 Début évaluation de ${sanMove} sur FEN: ${fen.substring(0, 30)}...`)
 
   try {
-    const response = await fetch("http://57.128.191.150:8080/move", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fen: currentFen.value, move: uciMove }),
-    })
-    const data = await response.json()
+    const evalData = await analyzePosition(fen, sanMove)
+    
+    console.log('📦 Réponse API complète:', JSON.stringify(evalData, null, 2))
+    
+    // Vérifier que cette évaluation est toujours pertinente
+    if (currentMoveEvaluation !== evalId) {
+      console.log('⏹️ Évaluation obsolète, ignorée')
+      return
+    }
 
-    if (!response.ok || data.isBest === false) {
-      message.value = data.error ? (props.isEnglish ? "❌ API Error: " + data.error : "❌ Erreur API : " + data.error) : (props.isEnglish ? "❌ Wrong move, try again!" : "❌ Mauvais coup, essaie encore !")
+    const evalType = evalData?.evaluation_type?.toString().toLowerCase() || ""
+    console.log(`📊 ${sanMove} → Type d'évaluation: "${evalType}"`)
+    
+    // Log détaillé pour comprendre ce qui se passe
+    if (!evalType) {
+      console.warn('⚠️ Aucun evaluation_type reçu de l\'API!')
+    }
+    
+    if (evalType.includes("blunder")) {
+      console.log('💥 BLUNDER DÉTECTÉ!')
+      message.value = t.value.blunder
       messageType.value = "bad"
+    } else if (evalType.includes("mistake")) {
+      console.log('😬 Erreur détectée')
+      message.value = props.isEnglish ? "😬 Mistake" : "😬 Erreur"
+      messageType.value = "bad"
+    } else if (evalType.includes("inaccuracy")) {
+      console.log('🤨 Imprécision détectée')
+      message.value = props.isEnglish ? "🤨 Inaccuracy" : "🤨 Imprécision"
+      messageType.value = ""
+    } else if (evalType.includes("good") || evalType.includes("best")) {
+      console.log('✅ Bon coup!')
+      message.value = t.value.wellDone
+      messageType.value = "good"
+    } else {
+      console.log(`⚠️ Type d'évaluation inconnu: "${evalType}", considéré comme bon`)
+      message.value = t.value.wellDone
+      messageType.value = "good"
+    }
+    
+    console.log(`💬 Message affiché: "${message.value}" (type: ${messageType.value})`)
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      console.log('⏹️ Evaluation cancelled')
+      return
+    }
+    console.error('❌ Erreur évaluation:', err)
+    console.error('Stack:', err.stack)
+    handleError('Evaluation error', err)
+    message.value = ""
+    messageType.value = ""
+  }
+}
+
+async function playEngineResponse(fen, hadPromotion = false) {
+  const responseId = {}
+  currentAutoResponse = responseId
+
+  try {
+    const chess = new Chess(fen)
+    
+    // Vérifier si la partie est terminée AVANT le coup de l'ordinateur
+    if (chess.isCheckmate()) {
+      message.value = t.value.checkmate
+      messageType.value = "good"
+      console.log('🏁 Mat détecté avant le coup de l\'ordinateur')
+      
+      // Si il y avait une promotion ET mat, c'est une victoire
+      if (hadPromotion) {
+        emit('lesson-completed', { result: 'promotion_checkmate', fen, hasErrors: false })
+      } else {
+        emit('lesson-completed', { result: 'checkmate', fen, hasErrors: false })
+      }
+      
+      // Retour au début après un délai
       setTimeout(() => {
-        chessBoard.value?.loadFen(currentFen.value)
-        message.value = ""
+        resetToInitialPosition()
+      }, 2000)
+      return
+    }
+    
+    if (chess.isStalemate()) {
+      message.value = t.value.stalemate
+      messageType.value = ""
+      console.log('🏁 Pat détecté avant le coup de l\'ordinateur')
+      emit('lesson-completed', { result: 'stalemate', fen, hasErrors: true })
+      // Retour au début après un délai
+      setTimeout(() => {
+        resetToInitialPosition()
+      }, 2000)
+      return
+    }
+    
+    if (chess.isDraw()) {
+      message.value = t.value.draw
+      messageType.value = ""
+      console.log('🏁 Nulle détectée avant le coup de l\'ordinateur')
+      emit('lesson-completed', { result: 'draw', fen, hasErrors: true })
+      // Retour au début après un délai
+      setTimeout(() => {
+        resetToInitialPosition()
       }, 2000)
       return
     }
 
-    message.value = props.isEnglish ? "✅ Well played!" : "✅ Bien joué !"
-    messageType.value = "good"
-    hintMove.value = ""
-    hintRequested.value = false
+    console.log('🤖 Recherche du meilleur coup pour l\'ordinateur...')
+    const hint = await analyzePosition(fen)
+    
+    // Vérifier que cette réponse est toujours pertinente
+    if (currentAutoResponse !== responseId) return
 
-    await new Promise(r => setTimeout(r, 500))
+    const uci = hint?.best_move
+    
+    // Si pas de best_move (cas d'une analyse de coup), on arrête
+    if (!uci || uci.length < 4) {
+      console.warn('⚠️ Pas de best_move reçu')
+      return
+    }
 
-    currentFen.value = data.fen
-    chessBoard.value?.highlightLastMove(move)
+    const from = uci.slice(0, 2)
+    const to = uci.slice(2, 4)
+    const promotion = uci[4] || undefined
+    
+    const applied = chess.move({ from, to, promotion })
+    if (!applied) {
+      console.warn('❌ Coup invalide:', uci)
+      return
+    }
 
-    if (data.isCheckmate) {
-      message.value = props.isEnglish ? "🏆 Well done, you checkmated!" : "🏆 Bravo, tu as donné mat !"
-      messageType.value = "good"
-      // Émettre l'événement de leçon terminée
-      emit('lesson-completed')
-      // Retour à la position initiale après un court délai
+    console.log(`🤖 L'ordinateur joue: ${applied.san}`)
+
+    // Vérifier si la pièce promue a été capturée
+    let promotionCaptured = false
+    if (hadPromotion && lastPromotionSquare.value) {
+      if (to === lastPromotionSquare.value && applied.captured) {
+        console.log(`💥 La pièce promue sur ${lastPromotionSquare.value} a été capturée !`)
+        promotionCaptured = true
+        lastPromotionSquare.value = null
+        // Effacer le message de promotion et continuer le jeu
+        message.value = ""
+        messageType.value = ""
+        // Ne pas retourner à zéro, continuer le jeu normalement
+      } else {
+        console.log(`✅ La pièce promue sur ${lastPromotionSquare.value} a survécu !`)
+        // La promotion est réussie
+        message.value = t.value.promotion
+        messageType.value = "good"
+        emit('lesson-completed', { result: 'promotion_survived', fen, hasErrors: false })
+        lastPromotionSquare.value = null
+        // Retour au début après un délai
+        setTimeout(() => {
+          resetToInitialPosition()
+        }, 2000)
+        return
+      }
+    }
+
+    currentFen.value = chess.fen()
+    chessBoard.value?.loadFen(currentFen.value)
+    chessBoard.value?.highlightLastMove({ from, to })
+    chessBoard.value?.clearPremove() // Effacer les premoves après le coup de l'ordinateur
+    
+    // Vérifier si le joueur est mat/pat/nulle après le coup de l'ordinateur
+    if (chess.isCheckmate()) {
+      message.value = t.value.checkmate
+      messageType.value = "bad"
+      console.log('🏁 Le joueur est mat')
+      emit('lesson-completed', { result: 'player_checkmated', fen: currentFen.value, hasErrors: true })
+      // Retour au début après un délai
       setTimeout(() => {
         resetToInitialPosition()
-      }, 1500)
+      }, 2000)
+    } else if (chess.isStalemate()) {
+      message.value = t.value.stalemate
+      messageType.value = ""
+      console.log('🏁 Pat (après coup ordinateur)')
+      emit('lesson-completed', { result: 'draw', fen: currentFen.value, hasErrors: true })
+      // Retour au début après un délai
+      setTimeout(() => {
+        resetToInitialPosition()
+      }, 2000)
+    } else if (chess.isDraw()) {
+      message.value = t.value.draw
+      messageType.value = ""
+      console.log('🏁 Nulle (après coup ordinateur)')
+      emit('lesson-completed', { result: 'draw', fen: currentFen.value, hasErrors: true })
+      // Retour au début après un délai
+      setTimeout(() => {
+        resetToInitialPosition()
+      }, 2000)
+    } else if (chess.isInsufficientMaterial()) {
+      message.value = t.value.draw
+      messageType.value = ""
+      console.log('🏁 Matériel insuffisant')
+      emit('lesson-completed', { result: 'insufficient_material', fen: currentFen.value, hasErrors: true })
     }
+    
   } catch (err) {
-    message.value = props.isEnglish ? "❌ Network error: " + err.message : "❌ Erreur réseau : " + err.message
-    messageType.value = "bad"
-    setTimeout(() => {
-      chessBoard.value?.loadFen(currentFen.value)
-      message.value = ""
-    }, 2000)
+    if (err.name === 'AbortError') {
+      console.log('⏹️ Engine response cancelled')
+      return
+    }
+    handleError('Engine response error', err)
   }
 }
 
-// --- Démo scriptée uniquement ---
+// Appel API unifié avec gestion d'erreurs améliorée
+async function analyzePosition(fen, move = null) {
+  const body = { fen, depth: props.analysisDepth }
+  if (move) {
+    body.move = move
+    console.log(`🔍 Analyse d'un coup spécifique: ${move}`)
+  } else {
+    console.log(`🔍 Recherche du meilleur coup (pas d'évaluation de coup)`)
+  }
+
+  console.log(`🌐 Appel API: ${props.apiUrl}`)
+  console.log(`📤 Envoi:`, JSON.stringify(body, null, 2))
+
+  // Créer un nouveau AbortController pour cette requête
+  abortController = new AbortController()
+
+  try {
+    const response = await fetch(props.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: abortController.signal
+    })
+
+    console.log(`📡 Réponse HTTP: ${response.status} ${response.statusText}`)
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error')
+      console.error(`❌ Erreur API ${response.status}:`, errorText)
+      throw new Error(`API error ${response.status}: ${errorText}`)
+    }
+
+    const data = await response.json()
+    
+    if (move) {
+      console.log(`📥 Évaluation reçue pour ${move}:`, JSON.stringify(data, null, 2))
+    } else {
+      console.log(`📥 Meilleur coup trouvé: ${data.best_move}`)
+    }
+    
+    return data
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      console.log('⏹️ Requête annulée')
+      throw err // Laisser passer les annulations
+    }
+    
+    // Gestion des erreurs spécifiques
+    if (err.message.includes('Failed to fetch')) {
+      console.error('❌ Network error - is the API running?')
+      message.value = t.value.networkError
+      messageType.value = "bad"
+    }
+    
+    console.error('❌ Erreur fetch:', err)
+    throw err
+  } finally {
+    abortController = null
+  }
+}
+
+function handleFen(fen) {
+  currentFen.value = fen
+  
+  // Mettre à jour l'indicateur de tour
+  const sideToMove = fen.split(" ")[1]?.toLowerCase()
+  currentPlayer.value = sideToMove || "w"
+}
+
+// Démo scriptée
 async function startDemo() {
   demoRunning.value = true
   demoAborted.value = false
+  cancelPendingRequests()
   resetToInitialPosition()
-  // Préparer la séquence de coups: priorité aux scriptedMoves, sinon PGN
+
+  // Préparer la séquence
   let sequence = Array.isArray(props.scriptedMoves) ? [...props.scriptedMoves] : []
-  if ((!sequence || sequence.length === 0) && props.scriptedPgn) {
+  
+  if (sequence.length === 0 && props.scriptedPgn) {
     const { fen: fenFromPgn, sanMoves } = parsePgn(props.scriptedPgn)
     if (fenFromPgn) {
       currentFen.value = fenFromPgn
@@ -151,36 +542,28 @@ async function startDemo() {
     }
     sequence = sanMoves
   }
-  if (!sequence || sequence.length === 0) {
-    console.warn("🚫 No scripted demo for this module")
-    message.value = props.isEnglish ? "🚫 This module has no scripted demo." : "🚫 Ce module n'a pas de démo scriptée."
+
+  if (sequence.length === 0) {
+    console.warn("No scripted demo available")
+    message.value = t.value.noScriptedDemo
     messageType.value = "bad"
     demoRunning.value = false
     return
   }
-  console.log(`▶️ Début de la démo: ${sequence.length} coup(s)`) 
+
+  console.log(`🚀 Starting demo: ${sequence.length} move(s)`)
   const chess = new Chess(currentFen.value)
 
   for (let i = 0; i < sequence.length; i++) {
     if (demoAborted.value) break
-    const step = sequence[i]
 
-    // Accepte: 'e2e4' | 'e4' (SAN) | { from, to, promotion? }
-    let move
-    if (typeof step === 'string') {
-      // essaie UCI d'abord
-      if (/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(step)) {
-        const from = step.slice(0, 2)
-        const to = step.slice(2, 4)
-        const promotion = step.slice(4) || undefined
-        move = chess.move({ from, to, promotion })
-      } else {
-        move = chess.move(step, { sloppy: true })
-      }
-    } else if (step && typeof step === 'object' && step.from && step.to) {
-      move = chess.move({ from: step.from, to: step.to, promotion: step.promotion })
+    const step = sequence[i]
+    const move = parseMove(chess, step)
+    
+    if (!move) {
+      console.error(`❌ Invalid move at step ${i + 1}:`, step)
+      break
     }
-    if (!move) break
 
     moves.value.push(move.san)
     currentFen.value = chess.fen()
@@ -188,28 +571,25 @@ async function startDemo() {
     chessBoard.value?.highlightLastMove(move)
 
     // Sons
-    if (move.flags && move.flags.includes('c')) {
+    if (move.flags?.includes('c')) {
       chessBoard.value?.playCaptureSound?.()
     } else {
       chessBoard.value?.playMoveSound?.()
     }
 
-    message.value = (step && typeof step === 'object' && step.comment)
+    message.value = (typeof step === 'object' && step.comment)
       ? step.comment
-      : `▶️ Coup ${i + 1}: ${move.san}`
+      : `▶️ ${props.isEnglish ? 'Move' : 'Coup'} ${i + 1}: ${move.san}`
     messageType.value = ""
-    // Delay between moves; allow stop during wait
-    const delayMs = 1000
-    const start = Date.now()
-    while (Date.now() - start < delayMs) {
-      if (demoAborted.value) break
-      await new Promise(r => setTimeout(r, 50))
-    }
-    if (demoAborted.value) break
+
+    // Attente interruptible
+    if (!await waitInterruptible(props.demoDelay)) break
   }
 
   if (!demoAborted.value) {
-    // Fin normale: on remet les pièces en place et on redonne la main au joueur
+    message.value = props.isEnglish ? "✅ Demo completed!" : "✅ Démo terminée !"
+    messageType.value = "good"
+    await wait(1000)
     resetToInitialPosition()
   }
 
@@ -220,32 +600,70 @@ function stopDemo() {
   demoAborted.value = true
   demoRunning.value = false
   resetToInitialPosition()
-  message.value = props.isEnglish ? "⏹️ Demo stopped" : "⏹️ Démo arrêtée"
+  message.value = t.value.demoStopped
   messageType.value = ""
 }
 
-// --- Indice (via Stockfish si tu veux le garder) ---
+// Utilitaire d'attente simple
+function wait(ms) {
+  return new Promise(resolve => {
+    const timeout = setTimeout(resolve, ms)
+    pendingTimeouts.add(timeout)
+    setTimeout(() => pendingTimeouts.delete(timeout), ms)
+  })
+}
+
+// Attente interruptible pour la démo
+async function waitInterruptible(ms) {
+  const start = Date.now()
+  while (Date.now() - start < ms) {
+    if (demoAborted.value) return false
+    await wait(50)
+  }
+  return true
+}
+
+function parseMove(chess, step) {
+  if (typeof step === 'string') {
+    // UCI format: e2e4
+    if (/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(step)) {
+      return chess.move({
+        from: step.slice(0, 2),
+        to: step.slice(2, 4),
+        promotion: step.slice(4) || undefined
+      })
+    }
+    // SAN format: e4, Nf3, etc.
+    return chess.move(step, { sloppy: true })
+  }
+  
+  // Object format: { from, to, promotion? }
+  if (step?.from && step?.to) {
+    return chess.move({
+      from: step.from,
+      to: step.to,
+      promotion: step.promotion
+    })
+  }
+  
+  return null
+}
+
+// Système d'indices
 async function getHint() {
   hintRequested.value = true
-  message.value = props.isEnglish ? "🤔 Looking for the best move..." : "🤔 Recherche du meilleur coup..."
+  message.value = t.value.lookingForMove
   messageType.value = ""
+
   try {
-    const response = await fetch("http://127.0.0.1:8080/hint", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fen: currentFen.value }),
-    })
-    const data = await response.json()
-    if (!response.ok) {
-      message.value = props.isEnglish ? "❌ Unable to get hint" : "❌ Impossible d'obtenir un indice"
-      messageType.value = "bad"
-      hintRequested.value = false
-      return
-    }
-    hintMove.value = translateToFrench(translateUciToSan(data.bestMove))
+    const data = await analyzePosition(currentFen.value)
+    const san = translateUciToSan(data.best_move)
+    hintMove.value = translateToFrench(san)
     message.value = ""
-  } catch {
-    message.value = props.isEnglish ? "❌ Network error" : "❌ Erreur réseau"
+  } catch (err) {
+    if (err.name === 'AbortError') return
+    handleError('Hint error', err)
+    message.value = t.value.noHint
     messageType.value = "bad"
     hintRequested.value = false
   }
@@ -253,12 +671,14 @@ async function getHint() {
 
 function translateUciToSan(uciMove) {
   if (!uciMove || uciMove.length < 4) return uciMove
+  
   try {
     const chess = new Chess(currentFen.value)
-    const from = uciMove.substring(0, 2)
-    const to = uciMove.substring(2, 4)
-    const promotion = uciMove.length > 4 ? uciMove[4] : undefined
-    const move = chess.move({ from, to, promotion })
+    const move = chess.move({
+      from: uciMove.substring(0, 2),
+      to: uciMove.substring(2, 4),
+      promotion: uciMove[4]
+    })
     return move?.san || uciMove
   } catch {
     return uciMove
@@ -266,89 +686,54 @@ function translateUciToSan(uciMove) {
 }
 
 function translateToFrench(sanMove) {
-  if (!sanMove) return sanMove
+  if (!sanMove || props.isEnglish) return sanMove
   
-  // Dictionnaire de traduction des pièces
-  const pieceTranslations = {
-    'K': 'R',  // Roi
-    'Q': 'D',  // Dame
-    'R': 'T',  // Tour
-    'B': 'F',  // Fou
-    'N': 'C',  // Cavalier
-    'P': ''    // Pion (pas de lettre en français)
-  }
+  const pieceMap = { 'K': 'R', 'Q': 'D', 'R': 'T', 'B': 'F', 'N': 'C' }
   
-  // Dictionnaire de traduction des colonnes
-  const columnTranslations = {
-    'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e', 'f': 'f', 'g': 'g', 'h': 'h'
-  }
-  
-  // Dictionnaire de traduction des rangées
-  const rankTranslations = {
-    '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8'
-  }
-  
-  let frenchMove = sanMove
-  
-  // Traduire les pièces
-  for (const [english, french] of Object.entries(pieceTranslations)) {
-    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
-  }
-  
-  // Traduire les colonnes (a-h restent identiques)
-  for (const [english, french] of Object.entries(columnTranslations)) {
-    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
-  }
-  
-  // Traduire les rangées (1-8 restent identiques)
-  for (const [english, french] of Object.entries(rankTranslations)) {
-    frenchMove = frenchMove.replace(new RegExp(english, 'g'), french)
-  }
-  
-  // Traduire les symboles spéciaux
-  frenchMove = frenchMove.replace(/x/g, 'x')  // Prise (reste identique)
-  frenchMove = frenchMove.replace(/\+/g, '+')  // Échec (reste identique)
-  frenchMove = frenchMove.replace(/#/g, '#')  // Échec et mat (reste identique)
-  frenchMove = frenchMove.replace(/=/g, '=')  // Promotion (reste identique)
-  
-  return frenchMove
+  return sanMove.replace(/[KQRBN]/g, match => pieceMap[match] || match)
 }
 
-// --- Utilitaires PGN ---
+// Utilitaire PGN
 function parsePgn(pgn) {
-  // Extrait FEN si présente
   const fenMatch = pgn.match(/\[FEN\s+"([^"]+)"\]/i)
-  const fen = fenMatch ? fenMatch[1] : null
-  // Enlève headers
-  const body = pgn.replace(/\[[^\]]*\]\s*/g, " ")
-  // Enlève commentaires { ... } et variantes ( ... )
-  const noComments = body.replace(/\{[^}]*\}/g, " ").replace(/\([^)]*\)/g, " ")
-  // Enlève numéros de coups et résultats
-  const tokens = noComments
+  const fen = fenMatch?.[1] || null
+  
+  const body = pgn
+    .replace(/\[[^\]]*\]\s*/g, " ")
+    .replace(/\{[^}]*\}/g, " ")
+    .replace(/\([^)]*\)/g, " ")
     .replace(/\d+\.(\.\.)?/g, " ")
     .replace(/1-0|0-1|1\/2-1\/2|\*/g, " ")
     .trim()
+  
+  const sanMoves = body
     .split(/\s+/)
-  // Garde que les SAN plausibles (incluant roques et promotions)
-  const sanMoves = tokens.filter(t => /^(O-O(-O)?|[NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](=[NBRQ])?[+#]?|[a-h]x[a-h][1-8](=[NBRQ])?[+#]?)$/.test(t))
+    .filter(t => /^(O-O(-O)?|[NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](=[NBRQ])?[+#]?|[a-h]x[a-h][1-8](=[NBRQ])?[+#]?)$/.test(t))
+  
   return { fen, sanMoves }
 }
 
+function updateWelcomeMessage() {
+  if (!demoRunning.value && !message.value) {
+    message.value = t.value.welcome
+    messageType.value = "good"
+  }
+}
+
+function handleError(context, error) {
+  console.error(`[LessonModule] ${context}:`, error)
+  emit('error', { context, error })
+}
+
+// Nettoyage au démontage
+onBeforeUnmount(() => {
+  cancelPendingRequests()
+})
+
 onMounted(() => {
-  // Charger la position initiale correcte au démarrage
   resetToInitialPosition()
   updateWelcomeMessage()
 })
-
-// Réagir aux changements de langue
-watch(() => props.isEnglish, () => {
-  updateWelcomeMessage()
-})
-
-function updateWelcomeMessage() {
-  message.value = props.isEnglish ? "👋 Welcome! Click 🚀 to start the demo." : "👋 Bienvenue ! Clique sur 🚀 pour lancer la démo."
-  messageType.value = "good"
-}
 </script>
 
 <style scoped>
@@ -358,9 +743,5 @@ function updateWelcomeMessage() {
   align-items: center;
   gap: 20px;
 }
+
 </style>
-
-
-
-
-

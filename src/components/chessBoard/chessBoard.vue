@@ -15,6 +15,7 @@
                   'possible-move': isPossibleMove(rowIndex, colIndex), 
                   'king-check': isKingInCheck(rowIndex, colIndex),
                   'last-move': isLastMove(rowIndex, colIndex),
+                  'premove': isPremove(rowIndex, colIndex),
                   'dragging': draggedPiece && draggedPiece.row === rowIndex && draggedPiece.col === colIndex }]"
               @click="handleSquareClick(rowIndex, colIndex)"
               @dragover.prevent
@@ -24,7 +25,7 @@
                 draggable="true"
                 @dragstart="handleDragStart($event, rowIndex, colIndex)"
                 @dragend="handleDragEnd">
-              <chessPiece :piece="square"/>
+              <chessPiece :piece="square" :selectedPieceSet="selectedPieceSet"/>
             </div>
             <div v-else
                 class="empty-square"
@@ -59,7 +60,8 @@ export default defineComponent({
     fen: { type: String, required: true },
     moves: { type: Array, default: () => [] },
     currentMoveIndex: { type: Number, default: -1 },
-    flipped: { type: Boolean, default: false }
+    flipped: { type: Boolean, default: false },
+    selectedPieceSet: { type: String, default: 'cburnett' }
   },
   emits: ["move", "fen"],
 
@@ -73,7 +75,8 @@ export default defineComponent({
       rowLabels: ['1', '2', '3', '4', '5', '6', '7', '8'],
       lastMoveStart: null,
       lastMoveEnd: null,
-      draggedPiece: null
+      draggedPiece: null,
+      premove: null // Coup préparé en avance
     };
   },
   computed: {
@@ -109,6 +112,9 @@ export default defineComponent({
         });
       });
       this.board = newBoard;
+      
+      // Exécuter le premove si c'est maintenant au tour du joueur
+      this.executePremove();
     },
 
     playMoveSound() {
@@ -140,7 +146,12 @@ export default defineComponent({
           this.selectedPiece = { row: rowIndex, col: colIndex };
           this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
         } else {
-          this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+          // Vérifier si c'est un premove (coup sur la couleur adverse)
+          if (piece && piece[0] !== currentTurn) {
+            this.setPremove(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+          } else {
+            this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+          }
           this.selectedPiece = null;
           this.possibleMoves = [];
         }
@@ -238,6 +249,11 @@ export default defineComponent({
       return (this.lastMoveStart && this.lastMoveStart.row === row && this.lastMoveStart.col === col) ||
              (this.lastMoveEnd && this.lastMoveEnd.row === row && this.lastMoveEnd.col === col);
     },
+    isPremove(row, col) {
+      return this.premove && 
+             ((this.premove.fromRow === row && this.premove.fromCol === col) ||
+              (this.premove.toRow === row && this.premove.toCol === col));
+    },
     highlightLastMove(move) {
       if (move) {
         const from = move.from;
@@ -290,6 +306,40 @@ export default defineComponent({
         this.selectedPiece = null;
         this.possibleMoves = [];
       }
+    },
+    
+    setPremove(fromRow, fromCol, toRow, toCol) {
+      const from = this.getCoordinates(fromRow, fromCol);
+      const to = this.getCoordinates(toRow, toCol);
+      
+      this.premove = {
+        from: from,
+        to: to,
+        fromRow: fromRow,
+        fromCol: fromCol,
+        toRow: toRow,
+        toCol: toCol
+      };
+      
+      console.log(`🎯 Premove préparé: ${from} → ${to}`);
+    },
+    
+    executePremove() {
+      if (this.premove) {
+        // Vérifier si c'est maintenant au tour du joueur qui a fait le premove
+        const currentTurn = this.chess.turn() === 'w' ? 'w' : 'b';
+        const premovePiece = this.board[this.premove.fromRow][this.premove.fromCol];
+        
+        if (premovePiece && premovePiece[0] === currentTurn) {
+          console.log(`⚡ Exécution du premove: ${this.premove.from} → ${this.premove.to}`);
+          this.movePiece(this.premove.fromRow, this.premove.fromCol, this.premove.toRow, this.premove.toCol);
+          this.premove = null;
+        }
+      }
+    },
+    
+    clearPremove() {
+      this.premove = null;
     },
     
     undoMove() {
@@ -346,6 +396,10 @@ export default defineComponent({
   padding-top: 20px;
   padding-right: 20px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .board-with-rows {
@@ -400,6 +454,11 @@ export default defineComponent({
   justify-content: center;
   position: relative;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  outline: none;
 }
 
 .white {
@@ -415,6 +474,10 @@ export default defineComponent({
   height: 100%;
   cursor: grab;
   user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  outline: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -515,6 +578,12 @@ export default defineComponent({
   background-color: var(--move-color) !important;
   position: relative;
   animation: highlight-move 0.4s ease-out;
+}
+
+.premove {
+  background-color: rgba(0, 255, 0, 0.3) !important;
+  border: 2px solid #00ff00;
+  position: relative;
 }
 
 @keyframes highlight-move {

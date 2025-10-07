@@ -2,430 +2,439 @@
 
 ```yaml
 - generic [ref=e3]:
-  - button "🌙" [ref=e4] [cursor=pointer]
-  - button "🇫🇷" [ref=e5] [cursor=pointer]
-  - button "Cavalier" [active] [ref=e6] [cursor=pointer]:
-    - img "Cavalier" [ref=e7] [cursor=pointer]
-  - generic [ref=e8]:
-    - generic [ref=e9]:
-      - generic [ref=e10]:
-        - generic [ref=e11]:
-          - generic [ref=e12]: "8"
-          - generic [ref=e13]: "7"
-          - generic [ref=e14]: "6"
-          - generic [ref=e15]: "5"
-          - generic [ref=e16]: "4"
-          - generic [ref=e17]: "3"
-          - generic [ref=e18]: "2"
-          - generic [ref=e19]: "1"
-        - generic [ref=e20]:
-          - generic [ref=e89]:
-            - img [ref=e98]
-            - img [ref=e107]
-          - img [ref=e142]
-      - generic [ref=e160]:
-        - generic [ref=e161]: a
-        - generic [ref=e162]: b
-        - generic [ref=e163]: c
-        - generic [ref=e164]: d
-        - generic [ref=e165]: e
-        - generic [ref=e166]: f
-        - generic [ref=e167]: g
-        - generic [ref=e168]: h
-    - generic [ref=e169]:
-      - 'heading "Mat élémentaire : Dame et roi contre roi" [level=2] [ref=e170]'
-      - generic [ref=e171]:
-        - img [ref=e173]
-        - paragraph [ref=e181]: 👋 Bienvenue ! Clique sur 🚀 pour lancer la démo.
-      - generic [ref=e182]:
-        - button "🚀 Lancer la démo" [ref=e183] [cursor=pointer]
-        - button "💡 Indice" [ref=e184] [cursor=pointer]
-  - generic [ref=e185]:
-    - generic [ref=e186]:
-      - generic [ref=e187]:
-        - img [ref=e190]
-        - generic [ref=e197]:
-          - heading "Modules disponibles" [level=3] [ref=e198]
-          - paragraph [ref=e199]: Choisis ton paquet de cours
-      - generic [ref=e200]:
-        - generic [ref=e201] [cursor=pointer]:
-          - generic [ref=e202] [cursor=pointer]: ♔
-          - generic [ref=e203] [cursor=pointer]:
-            - heading "Mats élémentaires" [level=4] [ref=e204] [cursor=pointer]
-            - paragraph [ref=e205] [cursor=pointer]: Les mats de base à connaître
-            - generic [ref=e207] [cursor=pointer]: 2 leçons
-        - generic [ref=e208] [cursor=pointer]:
-          - generic [ref=e209] [cursor=pointer]: ♜
-          - generic [ref=e210] [cursor=pointer]:
-            - heading "Finales de tour" [level=4] [ref=e211] [cursor=pointer]
-            - paragraph [ref=e212] [cursor=pointer]: Apprends les finales de tour essentielles
-            - generic [ref=e214] [cursor=pointer]: 3 leçons
-    - generic [ref=e215]:
-      - generic [ref=e216]:
-        - img "Coach" [ref=e219]
-        - generic [ref=e220]:
-          - heading "Révisions espacées" [level=3] [ref=e221]
-          - paragraph [ref=e222]: Reviens au bon moment pour ancrer tes finales
-      - generic [ref=e223]:
-        - generic [ref=e224]:
-          - generic [ref=e225]: "0"
-          - generic [ref=e226]: Total
-        - generic [ref=e227]:
-          - generic [ref=e228]: "0"
-          - generic [ref=e229]: Révisées
+  - generic [ref=e4]:
+    - img "Vitechess" [ref=e5]
+    - generic [ref=e6]: vitechess
+  - button "🌙" [ref=e7] [cursor=pointer]
+  - button "🇫🇷" [ref=e8] [cursor=pointer]
+  - button "Cavalier" [active] [ref=e9] [cursor=pointer]:
+    - img "Cavalier" [ref=e10] [cursor=pointer]
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]: "8"
+          - generic [ref=e16]: "7"
+          - generic [ref=e17]: "6"
+          - generic [ref=e18]: "5"
+          - generic [ref=e19]: "4"
+          - generic [ref=e20]: "3"
+          - generic [ref=e21]: "2"
+          - generic [ref=e22]: "1"
+        - generic [ref=e23]:
+          - generic [ref=e92]:
+            - img [ref=e101]
+            - img [ref=e110]
+          - img [ref=e145]
+      - generic [ref=e163]:
+        - generic [ref=e164]: a
+        - generic [ref=e165]: b
+        - generic [ref=e166]: c
+        - generic [ref=e167]: d
+        - generic [ref=e168]: e
+        - generic [ref=e169]: f
+        - generic [ref=e170]: g
+        - generic [ref=e171]: h
+    - generic [ref=e172]:
+      - 'heading "Mat élémentaire : Dame et roi contre roi" [level=2] [ref=e173]'
+      - generic [ref=e174]:
+        - img [ref=e176]
+        - paragraph [ref=e184]: 👋 Bienvenue ! Clique sur 🚀 pour lancer la démo.
+      - generic [ref=e185]:
+        - button "🚀 Lancer la démo" [ref=e186] [cursor=pointer]
+        - button "💡 Indice" [ref=e187] [cursor=pointer]
+  - generic [ref=e188]:
+    - generic [ref=e189]:
+      - generic [ref=e190]:
+        - img [ref=e193]
+        - generic [ref=e200]:
+          - heading "Modules disponibles" [level=3] [ref=e201]
+          - paragraph [ref=e202]: Choisis ton paquet de cours
+      - generic [ref=e203]:
+        - generic [ref=e204] [cursor=pointer]:
+          - generic [ref=e205] [cursor=pointer]: ♔
+          - generic [ref=e206] [cursor=pointer]:
+            - heading "Mats élémentaires" [level=4] [ref=e207] [cursor=pointer]
+            - paragraph [ref=e208] [cursor=pointer]: Les mats de base à connaître
+            - generic [ref=e210] [cursor=pointer]: 2 leçons
+        - generic [ref=e211] [cursor=pointer]:
+          - generic [ref=e212] [cursor=pointer]: ♜
+          - generic [ref=e213] [cursor=pointer]:
+            - heading "Finales de tour" [level=4] [ref=e214] [cursor=pointer]
+            - paragraph [ref=e215] [cursor=pointer]: Apprends les finales de tour essentielles
+            - generic [ref=e217] [cursor=pointer]: 4 leçons
+        - generic [ref=e218] [cursor=pointer]:
+          - generic [ref=e219] [cursor=pointer]: ♟
+          - generic [ref=e220] [cursor=pointer]:
+            - heading "Finales de pion" [level=4] [ref=e221] [cursor=pointer]
+            - paragraph [ref=e222] [cursor=pointer]: Maîtrise les finales de pion fondamentales
+            - generic [ref=e224] [cursor=pointer]: 3 leçons
+    - generic [ref=e225]:
+      - generic [ref=e226]:
+        - img "Coach" [ref=e229]
         - generic [ref=e230]:
-          - generic [ref=e231]: "0"
-          - generic [ref=e232]: À réviser
-        - generic [ref=e233]:
-          - generic [ref=e234]: "0"
-          - generic [ref=e235]: Nouvelles
-      - generic [ref=e236]:
-        - generic [ref=e237]: 🎉
-        - paragraph [ref=e238]: Tout est à jour. Tu peux jouer ou apprendre une nouvelle finale.
-  - generic [ref=e240]:
-    - generic [ref=e241]:
-      - heading "Choisir le style des pièces" [level=3] [ref=e242]
-      - button "×" [ref=e243] [cursor=pointer]
-    - generic [ref=e244]:
-      - generic [ref=e245] [cursor=pointer]:
-        - generic [ref=e247] [cursor=pointer]:
-          - img "wK" [ref=e249] [cursor=pointer]
-          - img "wQ" [ref=e251] [cursor=pointer]
-          - img "wR" [ref=e253] [cursor=pointer]
-          - img "wB" [ref=e255] [cursor=pointer]
-          - img "wN" [ref=e257] [cursor=pointer]
-          - img "wP" [ref=e259] [cursor=pointer]
-        - generic [ref=e260] [cursor=pointer]:
-          - heading "Classique" [level=4] [ref=e261] [cursor=pointer]
-          - paragraph [ref=e262] [cursor=pointer]: Style traditionnel
-      - generic [ref=e263] [cursor=pointer]:
-        - generic [ref=e265] [cursor=pointer]:
-          - img "wK" [ref=e267] [cursor=pointer]
-          - img "wQ" [ref=e269] [cursor=pointer]
-          - img "wR" [ref=e271] [cursor=pointer]
-          - img "wB" [ref=e273] [cursor=pointer]
-          - img "wN" [ref=e275] [cursor=pointer]
-          - img "wP" [ref=e277] [cursor=pointer]
-        - generic [ref=e278] [cursor=pointer]:
-          - heading "Alpha" [level=4] [ref=e279] [cursor=pointer]
-          - paragraph [ref=e280] [cursor=pointer]: Style moderne
-      - generic [ref=e281] [cursor=pointer]:
-        - generic [ref=e283] [cursor=pointer]:
-          - img "wK" [ref=e285] [cursor=pointer]
-          - img "wQ" [ref=e287] [cursor=pointer]
-          - img "wR" [ref=e289] [cursor=pointer]
-          - img "wB" [ref=e291] [cursor=pointer]
-          - img "wN" [ref=e293] [cursor=pointer]
-          - img "wP" [ref=e295] [cursor=pointer]
-        - generic [ref=e296] [cursor=pointer]:
-          - heading "Fantasy" [level=4] [ref=e297] [cursor=pointer]
-          - paragraph [ref=e298] [cursor=pointer]: Style fantaisie
-      - generic [ref=e299] [cursor=pointer]:
-        - generic [ref=e301] [cursor=pointer]:
-          - img "wK" [ref=e303] [cursor=pointer]
-          - img "wQ" [ref=e305] [cursor=pointer]
-          - img "wR" [ref=e307] [cursor=pointer]
-          - img "wB" [ref=e309] [cursor=pointer]
-          - img "wN" [ref=e311] [cursor=pointer]
-          - img "wP" [ref=e313] [cursor=pointer]
-        - generic [ref=e314] [cursor=pointer]:
-          - heading "Pixel" [level=4] [ref=e315] [cursor=pointer]
-          - paragraph [ref=e316] [cursor=pointer]: Style rétro
-      - generic [ref=e317] [cursor=pointer]:
-        - generic [ref=e319] [cursor=pointer]:
-          - img "wK" [ref=e321] [cursor=pointer]
-          - img "wQ" [ref=e323] [cursor=pointer]
-          - img "wR" [ref=e325] [cursor=pointer]
-          - img "wB" [ref=e327] [cursor=pointer]
-          - img "wN" [ref=e329] [cursor=pointer]
-          - img "wP" [ref=e331] [cursor=pointer]
-        - generic [ref=e332] [cursor=pointer]:
-          - heading "Caliente" [level=4] [ref=e333] [cursor=pointer]
-          - paragraph [ref=e334] [cursor=pointer]: Style chaud
-      - generic [ref=e335] [cursor=pointer]:
-        - generic [ref=e337] [cursor=pointer]:
-          - img "wK" [ref=e339] [cursor=pointer]
-          - img "wQ" [ref=e341] [cursor=pointer]
-          - img "wR" [ref=e343] [cursor=pointer]
-          - img "wB" [ref=e345] [cursor=pointer]
-          - img "wN" [ref=e347] [cursor=pointer]
-          - img "wP" [ref=e349] [cursor=pointer]
-        - generic [ref=e350] [cursor=pointer]:
-          - heading "Cardinal" [level=4] [ref=e351] [cursor=pointer]
-          - paragraph [ref=e352] [cursor=pointer]: Style élégant
-      - generic [ref=e353] [cursor=pointer]:
-        - generic [ref=e355] [cursor=pointer]:
-          - img "wK" [ref=e357] [cursor=pointer]
-          - img "wQ" [ref=e359] [cursor=pointer]
-          - img "wR" [ref=e361] [cursor=pointer]
-          - img "wB" [ref=e363] [cursor=pointer]
-          - img "wN" [ref=e365] [cursor=pointer]
-          - img "wP" [ref=e367] [cursor=pointer]
-        - generic [ref=e368] [cursor=pointer]:
-          - heading "Celtic" [level=4] [ref=e369] [cursor=pointer]
-          - paragraph [ref=e370] [cursor=pointer]: Style celtique
-      - generic [ref=e371] [cursor=pointer]:
-        - generic [ref=e373] [cursor=pointer]:
-          - img "wK" [ref=e375] [cursor=pointer]
-          - img "wQ" [ref=e377] [cursor=pointer]
-          - img "wR" [ref=e379] [cursor=pointer]
-          - img "wB" [ref=e381] [cursor=pointer]
-          - img "wN" [ref=e383] [cursor=pointer]
-          - img "wP" [ref=e385] [cursor=pointer]
-        - generic [ref=e386] [cursor=pointer]:
-          - heading "Chess7" [level=4] [ref=e387] [cursor=pointer]
-          - paragraph [ref=e388] [cursor=pointer]: Style moderne
-      - generic [ref=e389] [cursor=pointer]:
-        - generic [ref=e391] [cursor=pointer]:
-          - img "wK" [ref=e393] [cursor=pointer]
-          - img "wQ" [ref=e395] [cursor=pointer]
-          - img "wR" [ref=e397] [cursor=pointer]
-          - img "wB" [ref=e399] [cursor=pointer]
-          - img "wN" [ref=e401] [cursor=pointer]
-          - img "wP" [ref=e403] [cursor=pointer]
-        - generic [ref=e404] [cursor=pointer]:
-          - heading "Chessnut" [level=4] [ref=e405] [cursor=pointer]
-          - paragraph [ref=e406] [cursor=pointer]: Style naturel
-      - generic [ref=e407] [cursor=pointer]:
-        - generic [ref=e409] [cursor=pointer]:
-          - img "wK" [ref=e411] [cursor=pointer]
-          - img "wQ" [ref=e413] [cursor=pointer]
-          - img "wR" [ref=e415] [cursor=pointer]
-          - img "wB" [ref=e417] [cursor=pointer]
-          - img "wN" [ref=e419] [cursor=pointer]
-          - img "wP" [ref=e421] [cursor=pointer]
-        - generic [ref=e422] [cursor=pointer]:
-          - heading "Companion" [level=4] [ref=e423] [cursor=pointer]
-          - paragraph [ref=e424] [cursor=pointer]: Style compagnon
-      - generic [ref=e425] [cursor=pointer]:
-        - generic [ref=e427] [cursor=pointer]:
-          - img "wK" [ref=e429] [cursor=pointer]
-          - img "wQ" [ref=e431] [cursor=pointer]
-          - img "wR" [ref=e433] [cursor=pointer]
-          - img "wB" [ref=e435] [cursor=pointer]
-          - img "wN" [ref=e437] [cursor=pointer]
-          - img "wP" [ref=e439] [cursor=pointer]
-        - generic [ref=e440] [cursor=pointer]:
-          - heading "Dubrovny" [level=4] [ref=e441] [cursor=pointer]
-          - paragraph [ref=e442] [cursor=pointer]: Style russe
-      - generic [ref=e443] [cursor=pointer]:
-        - generic [ref=e445] [cursor=pointer]:
-          - img "wK" [ref=e447] [cursor=pointer]
-          - img "wQ" [ref=e449] [cursor=pointer]
-          - img "wR" [ref=e451] [cursor=pointer]
-          - img "wB" [ref=e453] [cursor=pointer]
-          - img "wN" [ref=e455] [cursor=pointer]
-          - img "wP" [ref=e457] [cursor=pointer]
-        - generic [ref=e458] [cursor=pointer]:
-          - heading "Fresca" [level=4] [ref=e459] [cursor=pointer]
-          - paragraph [ref=e460] [cursor=pointer]: Style frais
-      - generic [ref=e461] [cursor=pointer]:
-        - generic [ref=e463] [cursor=pointer]:
-          - img "wK" [ref=e465] [cursor=pointer]
-          - img "wQ" [ref=e467] [cursor=pointer]
-          - img "wR" [ref=e469] [cursor=pointer]
-          - img "wB" [ref=e471] [cursor=pointer]
-          - img "wN" [ref=e473] [cursor=pointer]
-          - img "wP" [ref=e475] [cursor=pointer]
-        - generic [ref=e476] [cursor=pointer]:
-          - heading "Gioco" [level=4] [ref=e477] [cursor=pointer]
-          - paragraph [ref=e478] [cursor=pointer]: Style italien
-      - generic [ref=e479] [cursor=pointer]:
-        - generic [ref=e481] [cursor=pointer]:
-          - img "wK" [ref=e483] [cursor=pointer]
-          - img "wQ" [ref=e485] [cursor=pointer]
-          - img "wR" [ref=e487] [cursor=pointer]
-          - img "wB" [ref=e489] [cursor=pointer]
-          - img "wN" [ref=e491] [cursor=pointer]
-          - img "wP" [ref=e493] [cursor=pointer]
-        - generic [ref=e494] [cursor=pointer]:
-          - heading "Governor" [level=4] [ref=e495] [cursor=pointer]
-          - paragraph [ref=e496] [cursor=pointer]: Style gouverneur
-      - generic [ref=e497] [cursor=pointer]:
-        - generic [ref=e499] [cursor=pointer]:
-          - img "wK" [ref=e501] [cursor=pointer]
-          - img "wQ" [ref=e503] [cursor=pointer]
-          - img "wR" [ref=e505] [cursor=pointer]
-          - img "wB" [ref=e507] [cursor=pointer]
-          - img "wN" [ref=e509] [cursor=pointer]
-          - img "wP" [ref=e511] [cursor=pointer]
-        - generic [ref=e512] [cursor=pointer]:
-          - heading "Horsey" [level=4] [ref=e513] [cursor=pointer]
-          - paragraph [ref=e514] [cursor=pointer]: Style cheval
-      - generic [ref=e515] [cursor=pointer]:
-        - generic [ref=e517] [cursor=pointer]:
-          - img "wK" [ref=e519] [cursor=pointer]
-          - img "wQ" [ref=e521] [cursor=pointer]
-          - img "wR" [ref=e523] [cursor=pointer]
-          - img "wB" [ref=e525] [cursor=pointer]
-          - img "wN" [ref=e527] [cursor=pointer]
-          - img "wP" [ref=e529] [cursor=pointer]
-        - generic [ref=e530] [cursor=pointer]:
-          - heading "Icpieces" [level=4] [ref=e531] [cursor=pointer]
-          - paragraph [ref=e532] [cursor=pointer]: Style icône
-      - generic [ref=e533] [cursor=pointer]:
-        - generic [ref=e535] [cursor=pointer]:
-          - img "wK" [ref=e537] [cursor=pointer]
-          - img "wQ" [ref=e539] [cursor=pointer]
-          - img "wR" [ref=e541] [cursor=pointer]
-          - img "wB" [ref=e543] [cursor=pointer]
-          - img "wN" [ref=e545] [cursor=pointer]
-          - img "wP" [ref=e547] [cursor=pointer]
-        - generic [ref=e548] [cursor=pointer]:
-          - heading "Kiwen Suwi" [level=4] [ref=e549] [cursor=pointer]
-          - paragraph [ref=e550] [cursor=pointer]: Style unique
-      - generic [ref=e551] [cursor=pointer]:
-        - generic [ref=e553] [cursor=pointer]:
-          - img "wK" [ref=e555] [cursor=pointer]
-          - img "wQ" [ref=e557] [cursor=pointer]
-          - img "wR" [ref=e559] [cursor=pointer]
-          - img "wB" [ref=e561] [cursor=pointer]
-          - img "wN" [ref=e563] [cursor=pointer]
-          - img "wP" [ref=e565] [cursor=pointer]
-        - generic [ref=e566] [cursor=pointer]:
-          - heading "Kosal" [level=4] [ref=e567] [cursor=pointer]
-          - paragraph [ref=e568] [cursor=pointer]: Style asiatique
-      - generic [ref=e569] [cursor=pointer]:
-        - generic [ref=e571] [cursor=pointer]:
-          - img "wK" [ref=e573] [cursor=pointer]
-          - img "wQ" [ref=e575] [cursor=pointer]
-          - img "wR" [ref=e577] [cursor=pointer]
-          - img "wB" [ref=e579] [cursor=pointer]
-          - img "wN" [ref=e581] [cursor=pointer]
-          - img "wP" [ref=e583] [cursor=pointer]
-        - generic [ref=e584] [cursor=pointer]:
-          - heading "Leipzig" [level=4] [ref=e585] [cursor=pointer]
-          - paragraph [ref=e586] [cursor=pointer]: Style allemand
-      - generic [ref=e587] [cursor=pointer]:
-        - generic [ref=e589] [cursor=pointer]:
-          - img "wK" [ref=e591] [cursor=pointer]
-          - img "wQ" [ref=e593] [cursor=pointer]
-          - img "wR" [ref=e595] [cursor=pointer]
-          - img "wB" [ref=e597] [cursor=pointer]
-          - img "wN" [ref=e599] [cursor=pointer]
-          - img "wP" [ref=e601] [cursor=pointer]
-        - generic [ref=e602] [cursor=pointer]:
-          - heading "Letter" [level=4] [ref=e603] [cursor=pointer]
-          - paragraph [ref=e604] [cursor=pointer]: Style lettre
-      - generic [ref=e605] [cursor=pointer]:
-        - generic [ref=e607] [cursor=pointer]:
-          - img "wK" [ref=e609] [cursor=pointer]
-          - img "wQ" [ref=e611] [cursor=pointer]
-          - img "wR" [ref=e613] [cursor=pointer]
-          - img "wB" [ref=e615] [cursor=pointer]
-          - img "wN" [ref=e617] [cursor=pointer]
-          - img "wP" [ref=e619] [cursor=pointer]
-        - generic [ref=e620] [cursor=pointer]:
-          - heading "Libra" [level=4] [ref=e621] [cursor=pointer]
-          - paragraph [ref=e622] [cursor=pointer]: Style balance
-      - generic [ref=e623] [cursor=pointer]:
-        - generic [ref=e625] [cursor=pointer]:
-          - img "wK" [ref=e627] [cursor=pointer]
-          - img "wQ" [ref=e629] [cursor=pointer]
-          - img "wR" [ref=e631] [cursor=pointer]
-          - img "wB" [ref=e633] [cursor=pointer]
-          - img "wN" [ref=e635] [cursor=pointer]
-          - img "wP" [ref=e637] [cursor=pointer]
-        - generic [ref=e638] [cursor=pointer]:
-          - heading "Maestro" [level=4] [ref=e639] [cursor=pointer]
-          - paragraph [ref=e640] [cursor=pointer]: Style maître
-      - generic [ref=e641] [cursor=pointer]:
-        - generic [ref=e643] [cursor=pointer]:
-          - img "wK" [ref=e645] [cursor=pointer]
-          - img "wQ" [ref=e647] [cursor=pointer]
-          - img "wR" [ref=e649] [cursor=pointer]
-          - img "wB" [ref=e651] [cursor=pointer]
-          - img "wN" [ref=e653] [cursor=pointer]
-          - img "wP" [ref=e655] [cursor=pointer]
-        - generic [ref=e656] [cursor=pointer]:
-          - heading "Merida" [level=4] [ref=e657] [cursor=pointer]
-          - paragraph [ref=e658] [cursor=pointer]: Style espagnol
-      - generic [ref=e659] [cursor=pointer]:
-        - generic [ref=e661] [cursor=pointer]:
-          - img "wK" [ref=e663] [cursor=pointer]
-          - img "wQ" [ref=e665] [cursor=pointer]
-          - img "wR" [ref=e667] [cursor=pointer]
-          - img "wB" [ref=e669] [cursor=pointer]
-          - img "wN" [ref=e671] [cursor=pointer]
-          - img "wP" [ref=e673] [cursor=pointer]
-        - generic [ref=e674] [cursor=pointer]:
-          - heading "Mpchess" [level=4] [ref=e675] [cursor=pointer]
-          - paragraph [ref=e676] [cursor=pointer]: Style moderne
-      - generic [ref=e677] [cursor=pointer]:
-        - generic [ref=e679] [cursor=pointer]:
-          - img "wK" [ref=e681] [cursor=pointer]
-          - img "wQ" [ref=e683] [cursor=pointer]
-          - img "wR" [ref=e685] [cursor=pointer]
-          - img "wB" [ref=e687] [cursor=pointer]
-          - img "wN" [ref=e689] [cursor=pointer]
-          - img "wP" [ref=e691] [cursor=pointer]
-        - generic [ref=e692] [cursor=pointer]:
-          - heading "Pirouetti" [level=4] [ref=e693] [cursor=pointer]
-          - paragraph [ref=e694] [cursor=pointer]: Style danse
-      - generic [ref=e695] [cursor=pointer]:
-        - generic [ref=e697] [cursor=pointer]:
-          - img "wK" [ref=e699] [cursor=pointer]
-          - img "wQ" [ref=e701] [cursor=pointer]
-          - img "wR" [ref=e703] [cursor=pointer]
-          - img "wB" [ref=e705] [cursor=pointer]
-          - img "wN" [ref=e707] [cursor=pointer]
-          - img "wP" [ref=e709] [cursor=pointer]
-        - generic [ref=e710] [cursor=pointer]:
-          - heading "Reilly Craig" [level=4] [ref=e711] [cursor=pointer]
-          - paragraph [ref=e712] [cursor=pointer]: Style artistique
-      - generic [ref=e713] [cursor=pointer]:
-        - generic [ref=e715] [cursor=pointer]:
-          - img "wK" [ref=e717] [cursor=pointer]
-          - img "wQ" [ref=e719] [cursor=pointer]
-          - img "wR" [ref=e721] [cursor=pointer]
-          - img "wB" [ref=e723] [cursor=pointer]
-          - img "wN" [ref=e725] [cursor=pointer]
-          - img "wP" [ref=e727] [cursor=pointer]
-        - generic [ref=e728] [cursor=pointer]:
-          - heading "Riohacha" [level=4] [ref=e729] [cursor=pointer]
-          - paragraph [ref=e730] [cursor=pointer]: Style colombien
-      - generic [ref=e731] [cursor=pointer]:
-        - generic [ref=e733] [cursor=pointer]:
-          - img "wK" [ref=e735] [cursor=pointer]
-          - img "wQ" [ref=e737] [cursor=pointer]
-          - img "wR" [ref=e739] [cursor=pointer]
-          - img "wB" [ref=e741] [cursor=pointer]
-          - img "wN" [ref=e743] [cursor=pointer]
-          - img "wP" [ref=e745] [cursor=pointer]
-        - generic [ref=e746] [cursor=pointer]:
-          - heading "Shapes" [level=4] [ref=e747] [cursor=pointer]
-          - paragraph [ref=e748] [cursor=pointer]: Style géométrique
-      - generic [ref=e749] [cursor=pointer]:
-        - generic [ref=e751] [cursor=pointer]:
-          - img "wK" [ref=e753] [cursor=pointer]
-          - img "wQ" [ref=e755] [cursor=pointer]
-          - img "wR" [ref=e757] [cursor=pointer]
-          - img "wB" [ref=e759] [cursor=pointer]
-          - img "wN" [ref=e761] [cursor=pointer]
-          - img "wP" [ref=e763] [cursor=pointer]
-        - generic [ref=e764] [cursor=pointer]:
-          - heading "Spatial" [level=4] [ref=e765] [cursor=pointer]
-          - paragraph [ref=e766] [cursor=pointer]: Style spatial
-      - generic [ref=e767] [cursor=pointer]:
-        - generic [ref=e769] [cursor=pointer]:
-          - img "wK" [ref=e771] [cursor=pointer]
-          - img "wQ" [ref=e773] [cursor=pointer]
-          - img "wR" [ref=e775] [cursor=pointer]
-          - img "wB" [ref=e777] [cursor=pointer]
-          - img "wN" [ref=e779] [cursor=pointer]
-          - img "wP" [ref=e781] [cursor=pointer]
-        - generic [ref=e782] [cursor=pointer]:
-          - heading "Staunty" [level=4] [ref=e783] [cursor=pointer]
-          - paragraph [ref=e784] [cursor=pointer]: Style robuste
-      - generic [ref=e785] [cursor=pointer]:
-        - generic [ref=e787] [cursor=pointer]:
-          - img "wK" [ref=e789] [cursor=pointer]
-          - img "wQ" [ref=e791] [cursor=pointer]
-          - img "wR" [ref=e793] [cursor=pointer]
-          - img "wB" [ref=e795] [cursor=pointer]
-          - img "wN" [ref=e797] [cursor=pointer]
-          - img "wP" [ref=e799] [cursor=pointer]
-        - generic [ref=e800] [cursor=pointer]:
-          - heading "Tatiana" [level=4] [ref=e801] [cursor=pointer]
-          - paragraph [ref=e802] [cursor=pointer]: Style élégant
+          - heading "Révisions espacées" [level=3] [ref=e231]
+          - paragraph [ref=e232]: Reviens au bon moment pour ancrer tes finales
+      - generic [ref=e233]:
+        - generic [ref=e234]:
+          - generic [ref=e235]: "0"
+          - generic [ref=e236]: Total
+        - generic [ref=e237]:
+          - generic [ref=e238]: "0"
+          - generic [ref=e239]: Révisées
+        - generic [ref=e240]:
+          - generic [ref=e241]: "0"
+          - generic [ref=e242]: À réviser
+        - generic [ref=e243]:
+          - generic [ref=e244]: "0"
+          - generic [ref=e245]: Nouvelles
+      - generic [ref=e246]:
+        - generic [ref=e247]: 🎉
+        - paragraph [ref=e248]: Tout est à jour. Tu peux jouer ou apprendre une nouvelle finale.
+  - generic [ref=e250]:
+    - generic [ref=e251]:
+      - heading "Choisir le style des pièces" [level=3] [ref=e252]
+      - button "×" [ref=e253] [cursor=pointer]
+    - generic [ref=e254]:
+      - generic [ref=e255] [cursor=pointer]:
+        - generic [ref=e257] [cursor=pointer]:
+          - img "wK" [ref=e259] [cursor=pointer]
+          - img "wQ" [ref=e261] [cursor=pointer]
+          - img "wR" [ref=e263] [cursor=pointer]
+          - img "wB" [ref=e265] [cursor=pointer]
+          - img "wN" [ref=e267] [cursor=pointer]
+          - img "wP" [ref=e269] [cursor=pointer]
+        - generic [ref=e270] [cursor=pointer]:
+          - heading "Classique" [level=4] [ref=e271] [cursor=pointer]
+          - paragraph [ref=e272] [cursor=pointer]: Style traditionnel
+      - generic [ref=e273] [cursor=pointer]:
+        - generic [ref=e275] [cursor=pointer]:
+          - img "wK" [ref=e277] [cursor=pointer]
+          - img "wQ" [ref=e279] [cursor=pointer]
+          - img "wR" [ref=e281] [cursor=pointer]
+          - img "wB" [ref=e283] [cursor=pointer]
+          - img "wN" [ref=e285] [cursor=pointer]
+          - img "wP" [ref=e287] [cursor=pointer]
+        - generic [ref=e288] [cursor=pointer]:
+          - heading "Alpha" [level=4] [ref=e289] [cursor=pointer]
+          - paragraph [ref=e290] [cursor=pointer]: Style moderne
+      - generic [ref=e291] [cursor=pointer]:
+        - generic [ref=e293] [cursor=pointer]:
+          - img "wK" [ref=e295] [cursor=pointer]
+          - img "wQ" [ref=e297] [cursor=pointer]
+          - img "wR" [ref=e299] [cursor=pointer]
+          - img "wB" [ref=e301] [cursor=pointer]
+          - img "wN" [ref=e303] [cursor=pointer]
+          - img "wP" [ref=e305] [cursor=pointer]
+        - generic [ref=e306] [cursor=pointer]:
+          - heading "Fantasy" [level=4] [ref=e307] [cursor=pointer]
+          - paragraph [ref=e308] [cursor=pointer]: Style fantaisie
+      - generic [ref=e309] [cursor=pointer]:
+        - generic [ref=e311] [cursor=pointer]:
+          - img "wK" [ref=e313] [cursor=pointer]
+          - img "wQ" [ref=e315] [cursor=pointer]
+          - img "wR" [ref=e317] [cursor=pointer]
+          - img "wB" [ref=e319] [cursor=pointer]
+          - img "wN" [ref=e321] [cursor=pointer]
+          - img "wP" [ref=e323] [cursor=pointer]
+        - generic [ref=e324] [cursor=pointer]:
+          - heading "Pixel" [level=4] [ref=e325] [cursor=pointer]
+          - paragraph [ref=e326] [cursor=pointer]: Style rétro
+      - generic [ref=e327] [cursor=pointer]:
+        - generic [ref=e329] [cursor=pointer]:
+          - img "wK" [ref=e331] [cursor=pointer]
+          - img "wQ" [ref=e333] [cursor=pointer]
+          - img "wR" [ref=e335] [cursor=pointer]
+          - img "wB" [ref=e337] [cursor=pointer]
+          - img "wN" [ref=e339] [cursor=pointer]
+          - img "wP" [ref=e341] [cursor=pointer]
+        - generic [ref=e342] [cursor=pointer]:
+          - heading "Caliente" [level=4] [ref=e343] [cursor=pointer]
+          - paragraph [ref=e344] [cursor=pointer]: Style chaud
+      - generic [ref=e345] [cursor=pointer]:
+        - generic [ref=e347] [cursor=pointer]:
+          - img "wK" [ref=e349] [cursor=pointer]
+          - img "wQ" [ref=e351] [cursor=pointer]
+          - img "wR" [ref=e353] [cursor=pointer]
+          - img "wB" [ref=e355] [cursor=pointer]
+          - img "wN" [ref=e357] [cursor=pointer]
+          - img "wP" [ref=e359] [cursor=pointer]
+        - generic [ref=e360] [cursor=pointer]:
+          - heading "Cardinal" [level=4] [ref=e361] [cursor=pointer]
+          - paragraph [ref=e362] [cursor=pointer]: Style élégant
+      - generic [ref=e363] [cursor=pointer]:
+        - generic [ref=e365] [cursor=pointer]:
+          - img "wK" [ref=e367] [cursor=pointer]
+          - img "wQ" [ref=e369] [cursor=pointer]
+          - img "wR" [ref=e371] [cursor=pointer]
+          - img "wB" [ref=e373] [cursor=pointer]
+          - img "wN" [ref=e375] [cursor=pointer]
+          - img "wP" [ref=e377] [cursor=pointer]
+        - generic [ref=e378] [cursor=pointer]:
+          - heading "Celtic" [level=4] [ref=e379] [cursor=pointer]
+          - paragraph [ref=e380] [cursor=pointer]: Style celtique
+      - generic [ref=e381] [cursor=pointer]:
+        - generic [ref=e383] [cursor=pointer]:
+          - img "wK" [ref=e385] [cursor=pointer]
+          - img "wQ" [ref=e387] [cursor=pointer]
+          - img "wR" [ref=e389] [cursor=pointer]
+          - img "wB" [ref=e391] [cursor=pointer]
+          - img "wN" [ref=e393] [cursor=pointer]
+          - img "wP" [ref=e395] [cursor=pointer]
+        - generic [ref=e396] [cursor=pointer]:
+          - heading "Chess7" [level=4] [ref=e397] [cursor=pointer]
+          - paragraph [ref=e398] [cursor=pointer]: Style moderne
+      - generic [ref=e399] [cursor=pointer]:
+        - generic [ref=e401] [cursor=pointer]:
+          - img "wK" [ref=e403] [cursor=pointer]
+          - img "wQ" [ref=e405] [cursor=pointer]
+          - img "wR" [ref=e407] [cursor=pointer]
+          - img "wB" [ref=e409] [cursor=pointer]
+          - img "wN" [ref=e411] [cursor=pointer]
+          - img "wP" [ref=e413] [cursor=pointer]
+        - generic [ref=e414] [cursor=pointer]:
+          - heading "Chessnut" [level=4] [ref=e415] [cursor=pointer]
+          - paragraph [ref=e416] [cursor=pointer]: Style naturel
+      - generic [ref=e417] [cursor=pointer]:
+        - generic [ref=e419] [cursor=pointer]:
+          - img "wK" [ref=e421] [cursor=pointer]
+          - img "wQ" [ref=e423] [cursor=pointer]
+          - img "wR" [ref=e425] [cursor=pointer]
+          - img "wB" [ref=e427] [cursor=pointer]
+          - img "wN" [ref=e429] [cursor=pointer]
+          - img "wP" [ref=e431] [cursor=pointer]
+        - generic [ref=e432] [cursor=pointer]:
+          - heading "Companion" [level=4] [ref=e433] [cursor=pointer]
+          - paragraph [ref=e434] [cursor=pointer]: Style compagnon
+      - generic [ref=e435] [cursor=pointer]:
+        - generic [ref=e437] [cursor=pointer]:
+          - img "wK" [ref=e439] [cursor=pointer]
+          - img "wQ" [ref=e441] [cursor=pointer]
+          - img "wR" [ref=e443] [cursor=pointer]
+          - img "wB" [ref=e445] [cursor=pointer]
+          - img "wN" [ref=e447] [cursor=pointer]
+          - img "wP" [ref=e449] [cursor=pointer]
+        - generic [ref=e450] [cursor=pointer]:
+          - heading "Dubrovny" [level=4] [ref=e451] [cursor=pointer]
+          - paragraph [ref=e452] [cursor=pointer]: Style russe
+      - generic [ref=e453] [cursor=pointer]:
+        - generic [ref=e455] [cursor=pointer]:
+          - img "wK" [ref=e457] [cursor=pointer]
+          - img "wQ" [ref=e459] [cursor=pointer]
+          - img "wR" [ref=e461] [cursor=pointer]
+          - img "wB" [ref=e463] [cursor=pointer]
+          - img "wN" [ref=e465] [cursor=pointer]
+          - img "wP" [ref=e467] [cursor=pointer]
+        - generic [ref=e468] [cursor=pointer]:
+          - heading "Fresca" [level=4] [ref=e469] [cursor=pointer]
+          - paragraph [ref=e470] [cursor=pointer]: Style frais
+      - generic [ref=e471] [cursor=pointer]:
+        - generic [ref=e473] [cursor=pointer]:
+          - img "wK" [ref=e475] [cursor=pointer]
+          - img "wQ" [ref=e477] [cursor=pointer]
+          - img "wR" [ref=e479] [cursor=pointer]
+          - img "wB" [ref=e481] [cursor=pointer]
+          - img "wN" [ref=e483] [cursor=pointer]
+          - img "wP" [ref=e485] [cursor=pointer]
+        - generic [ref=e486] [cursor=pointer]:
+          - heading "Gioco" [level=4] [ref=e487] [cursor=pointer]
+          - paragraph [ref=e488] [cursor=pointer]: Style italien
+      - generic [ref=e489] [cursor=pointer]:
+        - generic [ref=e491] [cursor=pointer]:
+          - img "wK" [ref=e493] [cursor=pointer]
+          - img "wQ" [ref=e495] [cursor=pointer]
+          - img "wR" [ref=e497] [cursor=pointer]
+          - img "wB" [ref=e499] [cursor=pointer]
+          - img "wN" [ref=e501] [cursor=pointer]
+          - img "wP" [ref=e503] [cursor=pointer]
+        - generic [ref=e504] [cursor=pointer]:
+          - heading "Governor" [level=4] [ref=e505] [cursor=pointer]
+          - paragraph [ref=e506] [cursor=pointer]: Style gouverneur
+      - generic [ref=e507] [cursor=pointer]:
+        - generic [ref=e509] [cursor=pointer]:
+          - img "wK" [ref=e511] [cursor=pointer]
+          - img "wQ" [ref=e513] [cursor=pointer]
+          - img "wR" [ref=e515] [cursor=pointer]
+          - img "wB" [ref=e517] [cursor=pointer]
+          - img "wN" [ref=e519] [cursor=pointer]
+          - img "wP" [ref=e521] [cursor=pointer]
+        - generic [ref=e522] [cursor=pointer]:
+          - heading "Horsey" [level=4] [ref=e523] [cursor=pointer]
+          - paragraph [ref=e524] [cursor=pointer]: Style cheval
+      - generic [ref=e525] [cursor=pointer]:
+        - generic [ref=e527] [cursor=pointer]:
+          - img "wK" [ref=e529] [cursor=pointer]
+          - img "wQ" [ref=e531] [cursor=pointer]
+          - img "wR" [ref=e533] [cursor=pointer]
+          - img "wB" [ref=e535] [cursor=pointer]
+          - img "wN" [ref=e537] [cursor=pointer]
+          - img "wP" [ref=e539] [cursor=pointer]
+        - generic [ref=e540] [cursor=pointer]:
+          - heading "Icpieces" [level=4] [ref=e541] [cursor=pointer]
+          - paragraph [ref=e542] [cursor=pointer]: Style icône
+      - generic [ref=e543] [cursor=pointer]:
+        - generic [ref=e545] [cursor=pointer]:
+          - img "wK" [ref=e547] [cursor=pointer]
+          - img "wQ" [ref=e549] [cursor=pointer]
+          - img "wR" [ref=e551] [cursor=pointer]
+          - img "wB" [ref=e553] [cursor=pointer]
+          - img "wN" [ref=e555] [cursor=pointer]
+          - img "wP" [ref=e557] [cursor=pointer]
+        - generic [ref=e558] [cursor=pointer]:
+          - heading "Kiwen Suwi" [level=4] [ref=e559] [cursor=pointer]
+          - paragraph [ref=e560] [cursor=pointer]: Style unique
+      - generic [ref=e561] [cursor=pointer]:
+        - generic [ref=e563] [cursor=pointer]:
+          - img "wK" [ref=e565] [cursor=pointer]
+          - img "wQ" [ref=e567] [cursor=pointer]
+          - img "wR" [ref=e569] [cursor=pointer]
+          - img "wB" [ref=e571] [cursor=pointer]
+          - img "wN" [ref=e573] [cursor=pointer]
+          - img "wP" [ref=e575] [cursor=pointer]
+        - generic [ref=e576] [cursor=pointer]:
+          - heading "Kosal" [level=4] [ref=e577] [cursor=pointer]
+          - paragraph [ref=e578] [cursor=pointer]: Style asiatique
+      - generic [ref=e579] [cursor=pointer]:
+        - generic [ref=e581] [cursor=pointer]:
+          - img "wK" [ref=e583] [cursor=pointer]
+          - img "wQ" [ref=e585] [cursor=pointer]
+          - img "wR" [ref=e587] [cursor=pointer]
+          - img "wB" [ref=e589] [cursor=pointer]
+          - img "wN" [ref=e591] [cursor=pointer]
+          - img "wP" [ref=e593] [cursor=pointer]
+        - generic [ref=e594] [cursor=pointer]:
+          - heading "Leipzig" [level=4] [ref=e595] [cursor=pointer]
+          - paragraph [ref=e596] [cursor=pointer]: Style allemand
+      - generic [ref=e597] [cursor=pointer]:
+        - generic [ref=e599] [cursor=pointer]:
+          - img "wK" [ref=e601] [cursor=pointer]
+          - img "wQ" [ref=e603] [cursor=pointer]
+          - img "wR" [ref=e605] [cursor=pointer]
+          - img "wB" [ref=e607] [cursor=pointer]
+          - img "wN" [ref=e609] [cursor=pointer]
+          - img "wP" [ref=e611] [cursor=pointer]
+        - generic [ref=e612] [cursor=pointer]:
+          - heading "Letter" [level=4] [ref=e613] [cursor=pointer]
+          - paragraph [ref=e614] [cursor=pointer]: Style lettre
+      - generic [ref=e615] [cursor=pointer]:
+        - generic [ref=e617] [cursor=pointer]:
+          - img "wK" [ref=e619] [cursor=pointer]
+          - img "wQ" [ref=e621] [cursor=pointer]
+          - img "wR" [ref=e623] [cursor=pointer]
+          - img "wB" [ref=e625] [cursor=pointer]
+          - img "wN" [ref=e627] [cursor=pointer]
+          - img "wP" [ref=e629] [cursor=pointer]
+        - generic [ref=e630] [cursor=pointer]:
+          - heading "Libra" [level=4] [ref=e631] [cursor=pointer]
+          - paragraph [ref=e632] [cursor=pointer]: Style balance
+      - generic [ref=e633] [cursor=pointer]:
+        - generic [ref=e635] [cursor=pointer]:
+          - img "wK" [ref=e637] [cursor=pointer]
+          - img "wQ" [ref=e639] [cursor=pointer]
+          - img "wR" [ref=e641] [cursor=pointer]
+          - img "wB" [ref=e643] [cursor=pointer]
+          - img "wN" [ref=e645] [cursor=pointer]
+          - img "wP" [ref=e647] [cursor=pointer]
+        - generic [ref=e648] [cursor=pointer]:
+          - heading "Maestro" [level=4] [ref=e649] [cursor=pointer]
+          - paragraph [ref=e650] [cursor=pointer]: Style maître
+      - generic [ref=e651] [cursor=pointer]:
+        - generic [ref=e653] [cursor=pointer]:
+          - img "wK" [ref=e655] [cursor=pointer]
+          - img "wQ" [ref=e657] [cursor=pointer]
+          - img "wR" [ref=e659] [cursor=pointer]
+          - img "wB" [ref=e661] [cursor=pointer]
+          - img "wN" [ref=e663] [cursor=pointer]
+          - img "wP" [ref=e665] [cursor=pointer]
+        - generic [ref=e666] [cursor=pointer]:
+          - heading "Merida" [level=4] [ref=e667] [cursor=pointer]
+          - paragraph [ref=e668] [cursor=pointer]: Style espagnol
+      - generic [ref=e669] [cursor=pointer]:
+        - generic [ref=e671] [cursor=pointer]:
+          - img "wK" [ref=e673] [cursor=pointer]
+          - img "wQ" [ref=e675] [cursor=pointer]
+          - img "wR" [ref=e677] [cursor=pointer]
+          - img "wB" [ref=e679] [cursor=pointer]
+          - img "wN" [ref=e681] [cursor=pointer]
+          - img "wP" [ref=e683] [cursor=pointer]
+        - generic [ref=e684] [cursor=pointer]:
+          - heading "Mpchess" [level=4] [ref=e685] [cursor=pointer]
+          - paragraph [ref=e686] [cursor=pointer]: Style moderne
+      - generic [ref=e687] [cursor=pointer]:
+        - generic [ref=e689] [cursor=pointer]:
+          - img "wK" [ref=e691] [cursor=pointer]
+          - img "wQ" [ref=e693] [cursor=pointer]
+          - img "wR" [ref=e695] [cursor=pointer]
+          - img "wB" [ref=e697] [cursor=pointer]
+          - img "wN" [ref=e699] [cursor=pointer]
+          - img "wP" [ref=e701] [cursor=pointer]
+        - generic [ref=e702] [cursor=pointer]:
+          - heading "Pirouetti" [level=4] [ref=e703] [cursor=pointer]
+          - paragraph [ref=e704] [cursor=pointer]: Style danse
+      - generic [ref=e705] [cursor=pointer]:
+        - generic [ref=e707] [cursor=pointer]:
+          - img "wK" [ref=e709] [cursor=pointer]
+          - img "wQ" [ref=e711] [cursor=pointer]
+          - img "wR" [ref=e713] [cursor=pointer]
+          - img "wB" [ref=e715] [cursor=pointer]
+          - img "wN" [ref=e717] [cursor=pointer]
+          - img "wP" [ref=e719] [cursor=pointer]
+        - generic [ref=e720] [cursor=pointer]:
+          - heading "Reilly Craig" [level=4] [ref=e721] [cursor=pointer]
+          - paragraph [ref=e722] [cursor=pointer]: Style artistique
+      - generic [ref=e723] [cursor=pointer]:
+        - generic [ref=e725] [cursor=pointer]:
+          - img "wK" [ref=e727] [cursor=pointer]
+          - img "wQ" [ref=e729] [cursor=pointer]
+          - img "wR" [ref=e731] [cursor=pointer]
+          - img "wB" [ref=e733] [cursor=pointer]
+          - img "wN" [ref=e735] [cursor=pointer]
+          - img "wP" [ref=e737] [cursor=pointer]
+        - generic [ref=e738] [cursor=pointer]:
+          - heading "Riohacha" [level=4] [ref=e739] [cursor=pointer]
+          - paragraph [ref=e740] [cursor=pointer]: Style colombien
+      - generic [ref=e741] [cursor=pointer]:
+        - generic [ref=e743] [cursor=pointer]:
+          - img "wK" [ref=e745] [cursor=pointer]
+          - img "wQ" [ref=e747] [cursor=pointer]
+          - img "wR" [ref=e749] [cursor=pointer]
+          - img "wB" [ref=e751] [cursor=pointer]
+          - img "wN" [ref=e753] [cursor=pointer]
+          - img "wP" [ref=e755] [cursor=pointer]
+        - generic [ref=e756] [cursor=pointer]:
+          - heading "Shapes" [level=4] [ref=e757] [cursor=pointer]
+          - paragraph [ref=e758] [cursor=pointer]: Style géométrique
+      - generic [ref=e759] [cursor=pointer]:
+        - generic [ref=e761] [cursor=pointer]:
+          - img "wK" [ref=e763] [cursor=pointer]
+          - img "wQ" [ref=e765] [cursor=pointer]
+          - img "wR" [ref=e767] [cursor=pointer]
+          - img "wB" [ref=e769] [cursor=pointer]
+          - img "wN" [ref=e771] [cursor=pointer]
+          - img "wP" [ref=e773] [cursor=pointer]
+        - generic [ref=e774] [cursor=pointer]:
+          - heading "Spatial" [level=4] [ref=e775] [cursor=pointer]
+          - paragraph [ref=e776] [cursor=pointer]: Style spatial
+      - generic [ref=e777] [cursor=pointer]:
+        - generic [ref=e779] [cursor=pointer]:
+          - img "wK" [ref=e781] [cursor=pointer]
+          - img "wQ" [ref=e783] [cursor=pointer]
+          - img "wR" [ref=e785] [cursor=pointer]
+          - img "wB" [ref=e787] [cursor=pointer]
+          - img "wN" [ref=e789] [cursor=pointer]
+          - img "wP" [ref=e791] [cursor=pointer]
+        - generic [ref=e792] [cursor=pointer]:
+          - heading "Staunty" [level=4] [ref=e793] [cursor=pointer]
+          - paragraph [ref=e794] [cursor=pointer]: Style robuste
+      - generic [ref=e795] [cursor=pointer]:
+        - generic [ref=e797] [cursor=pointer]:
+          - img "wK" [ref=e799] [cursor=pointer]
+          - img "wQ" [ref=e801] [cursor=pointer]
+          - img "wR" [ref=e803] [cursor=pointer]
+          - img "wB" [ref=e805] [cursor=pointer]
+          - img "wN" [ref=e807] [cursor=pointer]
+          - img "wP" [ref=e809] [cursor=pointer]
+        - generic [ref=e810] [cursor=pointer]:
+          - heading "Tatiana" [level=4] [ref=e811] [cursor=pointer]
+          - paragraph [ref=e812] [cursor=pointer]: Style élégant
 ```
