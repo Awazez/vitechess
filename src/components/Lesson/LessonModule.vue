@@ -86,7 +86,8 @@ const t = computed(() => ({
   stalemate: props.isEnglish ? "♟️ Stalemate" : "♟️ Pat",
   draw: props.isEnglish ? "🤝 Draw" : "🤝 Nulle",
   invalidFen: props.isEnglish ? "⚠️ Invalid position" : "⚠️ Position invalide",
-  apiTimeout: props.isEnglish ? "⏱️ Analysis timeout" : "⏱️ Délai d'analyse dépassé"
+  apiTimeout: props.isEnglish ? "⏱️ Analysis timeout" : "⏱️ Délai d'analyse dépassé",
+  promotion: props.isEnglish ? "♛ Promotion!" : "♛ Promotion !"
 }))
 
 // Watchers avec reset
@@ -148,6 +149,9 @@ function cancelPendingRequests() {
   pendingTimeouts.clear()
 }
 
+// Variable pour suivre les promotions
+let lastPromotionSquare = ref(null)
+
 // Gestion des coups utilisateur
 async function handleMove(move) {
   if (demoRunning.value) {
@@ -168,6 +172,7 @@ async function handleMove(move) {
   
   // Calculer la FEN après le coup
   let afterFen = preMoveFen
+  let hasPromotion = false
   try {
     const tmp = new Chess(preMoveFen)
     const result = tmp.move({ from: move.from, to: move.to, promotion: move.promotion })
@@ -177,6 +182,18 @@ async function handleMove(move) {
     }
     afterFen = tmp.fen()
     console.log('📋 FEN après coup:', afterFen)
+
+    // Promotion: afficher le message mais attendre la réponse de l'ordi
+    if (result.promotion) {
+      hasPromotion = true
+      lastPromotionSquare.value = move.to
+      console.log(`♛ Promotion détectée sur ${move.to} - attente de la réponse de l'adversaire`)
+      message.value = t.value.promotion
+      messageType.value = 'good'
+      // Synchroniser l'état courant
+      currentFen.value = afterFen
+      chessBoard.value?.loadFen(currentFen.value)
+    }
   } catch (err) {
     handleError('Move calculation error', err)
     return
@@ -194,19 +211,24 @@ async function handleMove(move) {
   
   if (sideToMove === "w") {
     console.log('⚪ Coup des Blancs → Évaluation + Réponse de l\'ordi')
-    // Pour les Blancs : évaluer, afficher le message, puis laisser l'ordi jouer
-    await evaluatePlayerMove(preMoveFen, move.san)
     
-    // Garder le message visible pendant le délai configuré
-    console.log(`⏱️ Attente ${props.feedbackDelay}ms pour afficher le feedback...`)
-    await wait(props.feedbackDelay)
+    // Si pas de promotion, évaluer le coup normalement
+    if (!hasPromotion) {
+      await evaluatePlayerMove(preMoveFen, move.san)
+      console.log(`⏱️ Attente ${props.feedbackDelay}ms pour afficher le feedback...`)
+      await wait(props.feedbackDelay)
+    } else {
+      // Si promotion, attendre un peu pour afficher le message
+      console.log(`⏱️ Attente ${props.feedbackDelay}ms pour afficher la promotion...`)
+      await wait(props.feedbackDelay)
+    }
     
     console.log('🤖 Tour de l\'ordinateur...')
-    await playEngineResponse(afterFen)
+    await playEngineResponse(afterFen, hasPromotion)
   } else {
     console.log('⚫ Coup des Noirs → Juste réponse de l\'ordi')
     // Pour les Noirs : juste laisser l'ordi jouer
-    await playEngineResponse(afterFen)
+    await playEngineResponse(afterFen, hasPromotion)
   }
   
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
@@ -281,7 +303,7 @@ async function evaluatePlayerMove(fen, sanMove) {
   }
 }
 
-async function playEngineResponse(fen) {
+async function playEngineResponse(fen, hadPromotion = false) {
   const responseId = {}
   currentAutoResponse = responseId
 
@@ -293,7 +315,14 @@ async function playEngineResponse(fen) {
       message.value = t.value.checkmate
       messageType.value = "good"
       console.log('🏁 Mat détecté avant le coup de l\'ordinateur')
-      emit('lesson-completed', { result: 'checkmate', fen, hasErrors: false })
+      
+      // Si il y avait une promotion ET mat, c'est une victoire
+      if (hadPromotion) {
+        emit('lesson-completed', { result: 'promotion_checkmate', fen, hasErrors: false })
+      } else {
+        emit('lesson-completed', { result: 'checkmate', fen, hasErrors: false })
+      }
+      
       // Retour au début après un délai
       setTimeout(() => {
         resetToInitialPosition()
@@ -350,6 +379,32 @@ async function playEngineResponse(fen) {
     }
 
     console.log(`🤖 L'ordinateur joue: ${applied.san}`)
+
+    // Vérifier si la pièce promue a été capturée
+    let promotionCaptured = false
+    if (hadPromotion && lastPromotionSquare.value) {
+      if (to === lastPromotionSquare.value && applied.captured) {
+        console.log(`💥 La pièce promue sur ${lastPromotionSquare.value} a été capturée !`)
+        promotionCaptured = true
+        lastPromotionSquare.value = null
+        // Effacer le message de promotion et continuer le jeu
+        message.value = ""
+        messageType.value = ""
+        // Ne pas retourner à zéro, continuer le jeu normalement
+      } else {
+        console.log(`✅ La pièce promue sur ${lastPromotionSquare.value} a survécu !`)
+        // La promotion est réussie
+        message.value = t.value.promotion
+        messageType.value = "good"
+        emit('lesson-completed', { result: 'promotion_survived', fen, hasErrors: false })
+        lastPromotionSquare.value = null
+        // Retour au début après un délai
+        setTimeout(() => {
+          resetToInitialPosition()
+        }, 2000)
+        return
+      }
+    }
 
     currentFen.value = chess.fen()
     chessBoard.value?.loadFen(currentFen.value)
