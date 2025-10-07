@@ -2,7 +2,7 @@
   <!-- Message pour mobile -->
   <div class="mobile-message">
     <div class="mobile-content">
-      <img :src="isDarkMode ? '/src/assets/logo/logo-dark.svg' : '/src/assets/logo/logo-light.svg'" alt="Vitechess" class="mobile-logo" />
+      <img :src="isDarkMode ? '/logo-dark.svg' : '/logo-light.svg'" alt="Vitechess" class="mobile-logo" />
       <h1>Vitechess est optimisé pour les écrans larges</h1>
       <p>Pour une expérience d'apprentissage optimale, nous recommandons d'utiliser un ordinateur ou une tablette en mode paysage.</p>
       <div class="mobile-features">
@@ -16,7 +16,7 @@
   <div class="container">
     <!-- Logo et titre en haut à gauche -->
     <div class="header-logo">
-      <img :src="isDarkMode ? '/src/assets/logo/logo-dark.svg' : '/src/assets/logo/logo-light.svg'" alt="Vitechess" class="logo" />
+      <img :src="isDarkMode ? '/logo-dark.svg' : '/logo-light.svg'" alt="Vitechess" class="logo" />
       <span class="app-name">vitechess</span>
     </div>
     
