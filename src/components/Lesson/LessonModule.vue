@@ -215,13 +215,8 @@ async function handleMove(move) {
     // Si pas de promotion, évaluer le coup normalement
     if (!hasPromotion) {
       await evaluatePlayerMove(preMoveFen, move.san)
-      console.log(`⏱️ Attente ${props.feedbackDelay}ms pour afficher le feedback...`)
-      await wait(props.feedbackDelay)
-    } else {
-      // Si promotion, attendre un peu pour afficher le message
-      console.log(`⏱️ Attente ${props.feedbackDelay}ms pour afficher la promotion...`)
-      await wait(props.feedbackDelay)
     }
+    // Pas de délai - l'API lente compense déjà
     
     console.log('🤖 Tour de l\'ordinateur...')
     await playEngineResponse(afterFen, hasPromotion)
