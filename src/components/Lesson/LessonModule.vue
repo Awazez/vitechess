@@ -39,7 +39,7 @@ const props = defineProps({
   scriptedPgn: { type: String, default: "" },
   selectedPieceSet: { type: String, default: "cburnett" },
   isEnglish: { type: Boolean, default: false },
-  apiUrl: { type: String, default: "http://127.0.0.1:8082/analyze" },
+  apiUrl: { type: String, default: "https://api.vitechess.com/analyze" },
   demoDelay: { type: Number, default: 1000 },
   analysisDepth: { type: Number, default: 12 },
   apiTimeout: { type: Number, default: 5000 }
