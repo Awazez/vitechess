@@ -33,9 +33,11 @@
       <button 
         class="hint-btn" 
         @click="$emit('get-hint')" 
-        :disabled="hintRequested || demoRunning"
+        :disabled="hintRequested || demoRunning || isLoading"
       >
-        💡 {{ isEnglish ? 'Hint' : 'Indice' }}
+        <span v-if="isLoading">⏳</span>
+        <span v-else>💡</span>
+        {{ isLoading ? (isEnglish ? 'Loading...' : 'Chargement...') : (isEnglish ? 'Hint' : 'Indice') }}
       </button>
       <button 
         class="reset-btn" 
@@ -57,6 +59,8 @@ defineProps({
   hintMove: String,
   demoRunning: Boolean,
   hintRequested: Boolean,
+  isLoading: Boolean,
+  loadingMessage: String,
   isEnglish: Boolean,
   isWhiteTurn: Boolean,
   flipped: Boolean
@@ -184,6 +188,16 @@ defineEmits(["start-demo", "stop-demo", "get-hint", "reset-position", "flip-boar
 .dark .flip-btn-small:hover {
   background: #2dd4bf;
   border-color: #2dd4bf;
+}
+
+/* Animation pour le bouton de chargement */
+.hint-btn:disabled span {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 

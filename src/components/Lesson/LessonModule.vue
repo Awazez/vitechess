@@ -15,6 +15,8 @@
       :hintMove="hintMove"
       :demoRunning="demoRunning"
       :hintRequested="hintRequested"
+      :isLoading="isLoading"
+      :loadingMessage="loadingMessage"
       :isEnglish="isEnglish"
       :isWhiteTurn="isWhiteTurn"
       :flipped="flipped"
@@ -32,6 +34,7 @@ import { ref, onMounted, watch, computed } from "vue"
 import { Chess } from "chess.js"
 import LessonBox from "./LessonBox.vue"
 import ChessBoard from "../chessBoard/chessBoard.vue"
+import { PERFORMANCE_CONFIG, getApiUrl, cleanupCache } from "../../config/performance.js"
 
 const props = defineProps({
   title: { type: String, default: "Basic mate" },
@@ -45,7 +48,11 @@ const props = defineProps({
   // Set de pièces sélectionné
   selectedPieceSet: { type: String, default: "cburnett" },
   // Langue
-  isEnglish: { type: Boolean, default: false }
+  isEnglish: { type: Boolean, default: false },
+  // Configuration API
+  apiUrl: { type: String, default: getApiUrl() },
+  apiTimeout: { type: Number, default: PERFORMANCE_CONFIG.API_TIMEOUT },
+  analysisDepth: { type: Number, default: PERFORMANCE_CONFIG.HINT_DEPTH }
 })
 
 const emit = defineEmits(['lesson-completed'])
@@ -59,8 +66,14 @@ const message = ref("")
 const messageType = ref("")
 const hintMove = ref("")
 const hintRequested = ref(false)
+const isLoading = ref(false)
+const loadingMessage = ref("")
 
 const chessBoard = ref(null)
+
+// Cache pour les évaluations API
+const evaluationCache = ref(new Map())
+const pendingRequests = ref(new Map())
 
 // Computed property pour déterminer qui a le trait
 const isWhiteTurn = computed(() => {
@@ -94,6 +107,29 @@ function resetToInitialPosition() {
   chessBoard.value?.loadFen(currentFen.value)
   message.value = props.isEnglish ? "Your turn!" : "À toi de jouer !"
   messageType.value = "good"
+  
+  // Vider le cache pour libérer la mémoire
+  clearCache()
+}
+
+// Fonction pour vider le cache
+function clearCache() {
+  evaluationCache.value.clear()
+  pendingRequests.value.clear()
+  console.log('🧹 Cache vidé')
+}
+
+// Fonction pour précharger les évaluations courantes
+async function preloadCommonPositions() {
+  console.log('🚀 Préchargement des positions courantes...')
+  for (const fen of PERFORMANCE_CONFIG.PRELOAD_POSITIONS) {
+    try {
+      await analyzePosition(fen, PERFORMANCE_CONFIG.PRELOAD_DEPTH)
+    } catch (error) {
+      console.warn('⚠️ Erreur préchargement pour FEN:', fen)
+    }
+  }
+  console.log('✅ Préchargement terminé')
 }
 
 function flipBoard() {
@@ -283,30 +319,79 @@ function stopDemo() {
   messageType.value = ""
 }
 
+// --- Fonction optimisée pour les appels API ---
+async function analyzePosition(fen, depth = props.analysisDepth) {
+  // Vérifier le cache d'abord
+  const cacheKey = `${fen}-${depth}`
+  if (evaluationCache.value.has(cacheKey)) {
+    console.log('🚀 Cache hit pour FEN:', fen)
+    return evaluationCache.value.get(cacheKey)
+  }
+
+  // Éviter les requêtes dupliquées
+  if (pendingRequests.value.has(cacheKey)) {
+    console.log('⏳ Requête en cours pour FEN:', fen)
+    return await pendingRequests.value.get(cacheKey)
+  }
+
+  console.log('🔍 Nouvelle requête API pour FEN:', fen)
+  
+  const requestPromise = fetchWithTimeout(fen, depth)
+  pendingRequests.value.set(cacheKey, requestPromise)
+  
+  try {
+    const result = await requestPromise
+    evaluationCache.value.set(cacheKey, result)
+    return result
+  } finally {
+    pendingRequests.value.delete(cacheKey)
+  }
+}
+
+async function fetchWithTimeout(fen, depth) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), props.apiTimeout)
+  
+  try {
+    const response = await fetch(props.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        fen: fen,
+        depth: depth
+      }),
+      signal: controller.signal
+    })
+    
+    clearTimeout(timeoutId)
+    
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`)
+    }
+    
+    return await response.json()
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout')
+    }
+    throw error
+  }
+}
+
 // --- Indice (utilise l'API principale) ---
 async function getHint() {
   hintRequested.value = true
-  message.value = props.isEnglish ? "🤔 Looking for the best move..." : "🤔 Recherche du meilleur coup..."
+  isLoading.value = true
+  loadingMessage.value = props.isEnglish ? "🤔 Analyzing position..." : "🤔 Analyse de la position..."
+  message.value = loadingMessage.value
   messageType.value = ""
   
   try {
-    // Utiliser l'API principale au lieu du serveur local
-    console.log('🔍 Demande d\'indice avec FEN:', currentFen.value)
-    const response = await fetch("https://api.vitechess.com/hint", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fen: currentFen.value }),
-    })
-    const data = await response.json()
+    const data = await analyzePosition(currentFen.value, props.analysisDepth)
     console.log('🔍 Réponse API:', data)
-    if (!response.ok) {
-      message.value = data.error ? (props.isEnglish ? "❌ API Error: " + data.error : "❌ Erreur API : " + data.error) : (props.isEnglish ? "❌ Unable to get hint" : "❌ Impossible d'obtenir un indice")
-      messageType.value = "bad"
-      hintRequested.value = false
-      return
-    }
-    console.log('🔍 Coup brut de l\'API:', data.bestMove)
-    const sanMove = translateUciToSan(data.bestMove)
+    console.log('🔍 Coup brut de l\'API:', data.best_move)
+    const sanMove = translateUciToSan(data.best_move)
     const translatedMove = props.isEnglish ? translateToEnglish(sanMove) : translateToFrench(sanMove)
     console.log('🔍 Coup traduit:', translatedMove)
     hintMove.value = translatedMove
@@ -319,10 +404,17 @@ async function getHint() {
       message.value = props.isEnglish ? `💡 Hint: ${translatedMove}` : `💡 Indice : ${translatedMove}`
     }
     messageType.value = "good"
-  } catch {
-    message.value = props.isEnglish ? "❌ Network error" : "❌ Erreur réseau"
+  } catch (error) {
+    console.error('❌ Erreur API:', error)
+    if (error.message.includes('timeout')) {
+      message.value = props.isEnglish ? "⏰ Request timeout - try again" : "⏰ Délai d'attente dépassé - réessayez"
+    } else {
+      message.value = props.isEnglish ? "❌ Network error" : "❌ Erreur réseau"
+    }
     messageType.value = "bad"
     hintRequested.value = false
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -469,10 +561,20 @@ function parsePgn(pgn) {
   return { fen, sanMoves }
 }
 
-onMounted(() => {
+onMounted(async () => {
   // Charger la position initiale correcte au démarrage
   resetToInitialPosition()
   updateWelcomeMessage()
+  
+  // Précharger les positions courantes en arrière-plan
+  setTimeout(() => {
+    preloadCommonPositions()
+  }, PERFORMANCE_CONFIG.PRELOAD_DELAY)
+  
+  // Nettoyer le cache périodiquement
+  setInterval(() => {
+    cleanupCache(evaluationCache.value)
+  }, PERFORMANCE_CONFIG.CACHE_CLEANUP_INTERVAL)
 })
 
 // Réagir aux changements de langue
