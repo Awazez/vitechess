@@ -157,20 +157,19 @@ export default defineComponent({
         this.lastMoveMap.add(`${this.lastMoveEnd.row},${this.lastMoveEnd.col}`);
       }
       
-      // Coups possibles
-      this.possibleMoves.forEach(move => {
-        this.possibleMap.add(`${move.row},${move.col}`);
-      });
+      // Coups possibles (seulement si une pièce est sélectionnée)
+      if (this.selectedPiece) {
+        this.possibleMoves.forEach(move => {
+          this.possibleMap.add(`${move.row},${move.col}`);
+        });
+        // Pièce sélectionnée
+        this.highlightMap.add(`${this.selectedPiece.row},${this.selectedPiece.col}`);
+      }
       
       // Premove
       if (this.premove) {
         this.premoveMap.add(`${this.premove.fromRow},${this.premove.fromCol}`);
         this.premoveMap.add(`${this.premove.toRow},${this.premove.toCol}`);
-      }
-      
-      // Pièce sélectionnée
-      if (this.selectedPiece) {
-        this.highlightMap.add(`${this.selectedPiece.row},${this.selectedPiece.col}`);
       }
     },
 
@@ -202,23 +201,25 @@ export default defineComponent({
         if (piece && piece[0] === currentTurn) {
           this.selectedPiece = { row: rowIndex, col: colIndex };
           this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+          // Mettre à jour les surbrillances pour la nouvelle sélection
+          this.updateHighlights();
         } else {
           // Vérifier si c'est un premove (coup sur la couleur adverse)
           if (piece && piece[0] !== currentTurn) {
             this.setPremove(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+            this.selectedPiece = null;
+            this.possibleMoves = [];
           } else {
             this.movePiece(this.selectedPiece.row, this.selectedPiece.col, rowIndex, colIndex);
+            // movePiece() gère déjà updateHighlights()
           }
-          this.selectedPiece = null;
-          this.possibleMoves = [];
         }
       } else if (piece && piece[0] === currentTurn) {
         this.selectedPiece = { row: rowIndex, col: colIndex };
         this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
+        // Mettre à jour les surbrillances pour la nouvelle sélection
+        this.updateHighlights();
       }
-      
-      // Mettre à jour les surbrillances après les changements
-      this.updateHighlights();
     },
     movePiece(fromRow, fromCol, toRow, toCol) {
       const from = this.getCoordinates(fromRow, fromCol);
@@ -265,9 +266,17 @@ export default defineComponent({
         
         this.$emit("fen", this.chess.fen());
         
+        // Réinitialiser la sélection après le mouvement
+        this.selectedPiece = null;
+        this.possibleMoves = [];
+        
+        // Mettre à jour les surbrillances APRÈS la réinitialisation
+        this.updateHighlights();
+        
       } catch (err) {
         console.error("❌ Erreur movePiece:", err);
         this.selectedPiece = null;
+        this.possibleMoves = [];
       }
     },
 
