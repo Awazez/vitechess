@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue"
+import { ref, onMounted, onBeforeUnmount, watch, computed, markRaw } from "vue"
 import { Chess } from "chess.js"
 import LessonBox from "./LessonBox.vue"
 import ChessBoard from "../chessBoard/chessBoard.vue"
@@ -62,7 +62,7 @@ const message = ref("")
 const messageType = ref("")
 const hintMove = ref("")
 const hintRequested = ref(false)
-const chessBoard = ref(null)
+const chessBoard = markRaw(ref(null))
 const currentPlayer = ref("w")
 
 // Gestion des requêtes en cours pour éviter les race conditions
@@ -98,7 +98,7 @@ watch(() => props.isEnglish, updateWelcomeMessage)
 // Validation de FEN
 function isValidFen(fen) {
   try {
-    new Chess(fen)
+    markRaw(new Chess(fen))
     return true
   } catch {
     return false
@@ -174,7 +174,7 @@ async function handleMove(move) {
   let afterFen = preMoveFen
   let hasPromotion = false
   try {
-    const tmp = new Chess(preMoveFen)
+    const tmp = markRaw(new Chess(preMoveFen))
     const result = tmp.move({ from: move.from, to: move.to, promotion: move.promotion })
     if (!result) {
       console.error('❌ Invalid move')
@@ -303,7 +303,7 @@ async function playEngineResponse(fen, hadPromotion = false) {
   currentAutoResponse = responseId
 
   try {
-    const chess = new Chess(fen)
+    const chess = markRaw(new Chess(fen))
     
     // Vérifier si la partie est terminée AVANT le coup de l'ordinateur
     if (chess.isCheckmate()) {
@@ -405,6 +405,13 @@ async function playEngineResponse(fen, hadPromotion = false) {
     chessBoard.value?.loadFen(currentFen.value)
     chessBoard.value?.highlightLastMove({ from, to })
     chessBoard.value?.clearPremove() // Effacer les premoves après le coup de l'ordinateur
+    
+    // Sons pour le coup de l'ordinateur
+    if (applied.flags?.includes('c')) {
+      chessBoard.value?.playCaptureSound?.()
+    } else {
+      chessBoard.value?.playMoveSound?.()
+    }
     
     // Vérifier si le joueur est mat/pat/nulle après le coup de l'ordinateur
     if (chess.isCheckmate()) {
@@ -547,7 +554,7 @@ async function startDemo() {
   }
 
   console.log(`🚀 Starting demo: ${sequence.length} move(s)`)
-  const chess = new Chess(currentFen.value)
+  const chess = markRaw(new Chess(currentFen.value))
 
   for (let i = 0; i < sequence.length; i++) {
     if (demoAborted.value) break
@@ -668,7 +675,7 @@ function translateUciToSan(uciMove) {
   if (!uciMove || uciMove.length < 4) return uciMove
   
   try {
-    const chess = new Chess(currentFen.value)
+    const chess = markRaw(new Chess(currentFen.value))
     const move = chess.move({
       from: uciMove.substring(0, 2),
       to: uciMove.substring(2, 4),

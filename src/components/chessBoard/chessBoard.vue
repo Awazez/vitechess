@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { defineComponent, watch } from 'vue';
+import { defineComponent, watch, markRaw } from 'vue';
 import chessPiece from './chessPiece.vue';
 import { Chess } from 'chess.js';
 
@@ -67,16 +67,21 @@ export default defineComponent({
 
   data() {
     return {
-      chess: new Chess(),
-      board: Array(8).fill(null).map(() => Array(8).fill(null)),
+      chess: markRaw(new Chess()),
+      board: markRaw(Array(8).fill(null).map(() => Array(8).fill(null))),
       selectedPiece: null,
-      possibleMoves: [],
-      columnLabels: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
-      rowLabels: ['1', '2', '3', '4', '5', '6', '7', '8'],
+      possibleMoves: markRaw([]),
+      columnLabels: markRaw(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']),
+      rowLabels: markRaw(['1', '2', '3', '4', '5', '6', '7', '8']),
       lastMoveStart: null,
       lastMoveEnd: null,
       draggedPiece: null,
-      premove: null // Coup préparé en avance
+      premove: null, // Coup préparé en avance
+      // Sets optimisés pour les vérifications O(1)
+      highlightMap: markRaw(new Set()),
+      possibleMap: markRaw(new Set()),
+      lastMoveMap: markRaw(new Set()),
+      premoveMap: markRaw(new Set())
     };
   },
   computed: {
@@ -84,7 +89,11 @@ export default defineComponent({
       return this.board;
     },
     displayedRowLabels() {
-      return this.rowLabels.slice().reverse();
+      // Cache le résultat pour éviter les recalculs
+      if (!this._cachedRowLabels) {
+        this._cachedRowLabels = markRaw(this.rowLabels.slice().reverse());
+      }
+      return this._cachedRowLabels;
     },
     displayedColumnLabels() {
       return this.columnLabels;
@@ -95,26 +104,74 @@ export default defineComponent({
   },
   methods: {
     updateBoard(fen) {
+      // Éviter les mises à jour inutiles si la FEN n'a pas changé
+      if (this._lastFen === fen) {
+        return;
+      }
+      
       try {
         this.chess.load(fen);
+        this._lastFen = fen;
       } catch (e) {
         console.warn("⚠️ FEN invalide reçue:", fen);
         return;
       }
 
-      const newBoard = Array(8).fill(null).map(() => Array(8).fill(null));
-      this.chess.board().forEach((row, colIndex) => {
-        row.forEach((square, rowIndex) => {
+      // Optimisation : réutiliser le tableau existant si possible
+      if (!this.board) {
+        this.board = markRaw(Array(8).fill(null).map(() => Array(8).fill(null)));
+      }
+      
+      const chessBoard = this.chess.board();
+      for (let colIndex = 0; colIndex < 8; colIndex++) {
+        for (let rowIndex = 0; rowIndex < 8; rowIndex++) {
+          const square = chessBoard[colIndex][rowIndex];
           if (square) {
             const piece = square.color === 'b' ? 'b' : 'w';
-            newBoard[rowIndex][colIndex] = piece + square.type.toUpperCase();
+            this.board[rowIndex][colIndex] = piece + square.type.toUpperCase();
+          } else {
+            this.board[rowIndex][colIndex] = null;
           }
-        });
-      });
-      this.board = newBoard;
+        }
+      }
       
       // Exécuter le premove si c'est maintenant au tour du joueur
       this.executePremove();
+      
+      // Mettre à jour les surbrillances
+      this.updateHighlights();
+    },
+
+    updateHighlights() {
+      // Vider tous les Sets
+      this.highlightMap.clear();
+      this.possibleMap.clear();
+      this.lastMoveMap.clear();
+      this.premoveMap.clear();
+      
+      // Dernier coup
+      if (this.lastMoveStart) {
+        this.lastMoveMap.add(`${this.lastMoveStart.row},${this.lastMoveStart.col}`);
+      }
+      if (this.lastMoveEnd) {
+        this.lastMoveMap.add(`${this.lastMoveEnd.row},${this.lastMoveEnd.col}`);
+      }
+      
+      // Coups possibles
+      this.possibleMoves.forEach(move => {
+        this.possibleMap.add(`${move.row},${move.col}`);
+      });
+      
+      // Premove
+      if (this.premove) {
+        this.premoveMap.add(`${this.premove.fromRow},${this.premove.fromCol}`);
+        this.premoveMap.add(`${this.premove.toRow},${this.premove.toCol}`);
+      }
+      
+      // Pièce sélectionnée
+      if (this.selectedPiece) {
+        this.highlightMap.add(`${this.selectedPiece.row},${this.selectedPiece.col}`);
+      }
     },
 
     playMoveSound() {
@@ -159,6 +216,9 @@ export default defineComponent({
         this.selectedPiece = { row: rowIndex, col: colIndex };
         this.possibleMoves = this.getPossibleMoves(rowIndex, colIndex);
       }
+      
+      // Mettre à jour les surbrillances après les changements
+      this.updateHighlights();
     },
     movePiece(fromRow, fromCol, toRow, toCol) {
       const from = this.getCoordinates(fromRow, fromCol);
@@ -217,42 +277,59 @@ export default defineComponent({
     getPossibleMoves(row, col) {
       const square = this.getCoordinates(row, col);
       const possibleMoves = this.chess.moves({ square, verbose: true });
-      return possibleMoves.map(move => {
+      return markRaw(possibleMoves.map(move => {
         const toRow = move.to.charCodeAt(0) - 'a'.charCodeAt(0);
         const toCol = 8 - parseInt(move.to.charAt(1));
         return { row: toRow, col: toCol };
-      });
+      }));
     },
     isPossibleMove(row, col) {
-      return this.possibleMoves.some(move => move.row === row && move.col === col);
+      return this.possibleMap.has(`${row},${col}`);
     },
     isKingInCheck(rowIndex, colIndex) {
-      const kingPosition = this.findKingPosition(this.chess.turn());
-      if (kingPosition && kingPosition.row === rowIndex && kingPosition.col === colIndex) {
-        return this.chess.inCheck();
+      // Cache le résultat pour éviter les recalculs coûteux
+      if (!this._kingCheckCache || this._kingCheckCache.fen !== this.fen) {
+        const kingPosition = this.findKingPosition(this.chess.turn());
+        const inCheck = this.chess.inCheck();
+        this._kingCheckCache = {
+          fen: this.fen,
+          kingPosition,
+          inCheck,
+          kingRow: kingPosition?.row,
+          kingCol: kingPosition?.col
+        };
       }
-      return false;
+      
+      return this._kingCheckCache.kingRow === rowIndex && 
+             this._kingCheckCache.kingCol === colIndex && 
+             this._kingCheckCache.inCheck;
     },
     findKingPosition(color) {
-      const board = this.chess.board();
-      for (let i = 0; i < board.length; i++) {
-        for (let j = 0; j < board[i].length; j++) {
-          const piece = board[j][i];
-          if (piece && piece.type === 'k' && piece.color === color) {
-            return { row: i, col: j };
+      // Cache la position du roi pour éviter les recalculs
+      const cacheKey = `${this.fen}-${color}`;
+      if (!this._kingPositionCache || this._kingPositionCache.key !== cacheKey) {
+        const board = this.chess.board();
+        for (let i = 0; i < board.length; i++) {
+          for (let j = 0; j < board[i].length; j++) {
+            const piece = board[j][i];
+            if (piece && piece.type === 'k' && piece.color === color) {
+              this._kingPositionCache = {
+                key: cacheKey,
+                position: { row: i, col: j }
+              };
+              return { row: i, col: j };
+            }
           }
         }
+        this._kingPositionCache = { key: cacheKey, position: null };
       }
-      return null;
+      return this._kingPositionCache.position;
     },
     isLastMove(row, col) {
-      return (this.lastMoveStart && this.lastMoveStart.row === row && this.lastMoveStart.col === col) ||
-             (this.lastMoveEnd && this.lastMoveEnd.row === row && this.lastMoveEnd.col === col);
+      return this.lastMoveMap.has(`${row},${col}`);
     },
     isPremove(row, col) {
-      return this.premove && 
-             ((this.premove.fromRow === row && this.premove.fromCol === col) ||
-              (this.premove.toRow === row && this.premove.toCol === col));
+      return this.premoveMap.has(`${row},${col}`);
     },
     highlightLastMove(move) {
       if (move) {
@@ -268,6 +345,9 @@ export default defineComponent({
         this.lastMoveStart = null;
         this.lastMoveEnd = null;
       }
+      
+      // Mettre à jour les surbrillances après le changement
+      this.updateHighlights();
     },
     handleDragStart(event, rowIndex, colIndex) {
       const piece = this.board[rowIndex][colIndex];
@@ -373,8 +453,11 @@ export default defineComponent({
     }
   },
   watch: {
-    fen(newFen) {
-      this.updateBoard(newFen);
+    fen: {
+      handler(newFen) {
+        this.updateBoard(newFen);
+      },
+      flush: 'post' // Optimisation : exécuter après le rendu DOM
     }
   }
 });
