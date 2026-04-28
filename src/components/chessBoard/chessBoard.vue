@@ -1,38 +1,36 @@
 <template>
   <div class="chess-board-container">
-    <div class="board-with-rows">
-      <div class="row-labels">
-        <div v-for="(rowLabel, index) in displayedRowLabels" :key="index" class="row-label">
-          {{ rowLabel }}
-        </div>
+    <div class="row-labels">
+      <div v-for="(rowLabel, index) in displayedRowLabels" :key="index" class="row-label">
+        {{ rowLabel }}
       </div>
-      <div class="chess-board">
-        <div v-for="(row, rowIndex) in displayedBoard" :key="rowIndex" class="row">
-          <div v-for="(square, colIndex) in row" :key="colIndex" 
-              class="square"
-              :class="[getSquareColor(rowIndex, colIndex), 
-                { 'selected': isSelected(rowIndex, colIndex), 
-                  'possible-move': isPossibleMove(rowIndex, colIndex), 
-                  'king-check': isKingInCheck(rowIndex, colIndex),
-                  'last-move': isLastMove(rowIndex, colIndex),
-                  'premove': isPremove(rowIndex, colIndex),
-                  'dragging': draggedPiece && draggedPiece.row === rowIndex && draggedPiece.col === colIndex }]"
-              @click="handleSquareClick(rowIndex, colIndex)"
-              @dragover.prevent
-              @drop="handleDrop($event, rowIndex, colIndex)">
-            <div v-if="square" 
-                class="piece"
-                draggable="true"
-                @dragstart="handleDragStart($event, rowIndex, colIndex)"
-                @dragend="handleDragEnd">
-              <chessPiece :piece="square" :selectedPieceSet="selectedPieceSet"/>
-            </div>
-            <div v-else
-                class="empty-square"
-                @click="handleSquareClick(rowIndex, colIndex)">
-            </div>
-            <div v-if="isPossibleMove(rowIndex, colIndex)" class="move-point"></div>
+    </div>
+    <div class="chess-board">
+      <div v-for="(row, rowIndex) in displayedBoard" :key="rowIndex" class="row">
+        <div v-for="(square, colIndex) in row" :key="colIndex"
+            class="square"
+            :class="[getSquareColor(rowIndex, colIndex),
+              { 'selected': isSelected(rowIndex, colIndex),
+                'possible-move': isPossibleMove(rowIndex, colIndex),
+                'king-check': isKingInCheck(rowIndex, colIndex),
+                'last-move': isLastMove(rowIndex, colIndex),
+                'premove': isPremove(rowIndex, colIndex),
+                'dragging': draggedPiece && draggedPiece.row === rowIndex && draggedPiece.col === colIndex }]"
+            @click="handleSquareClick(rowIndex, colIndex)"
+            @dragover.prevent
+            @drop="handleDrop($event, rowIndex, colIndex)">
+          <div v-if="square"
+              class="piece"
+              draggable="true"
+              @dragstart="handleDragStart($event, rowIndex, colIndex)"
+              @dragend="handleDragEnd">
+            <chessPiece :piece="square" :selectedPieceSet="selectedPieceSet"/>
           </div>
+          <div v-else
+              class="empty-square"
+              @click="handleSquareClick(rowIndex, colIndex)">
+          </div>
+          <div v-if="isPossibleMove(rowIndex, colIndex)" class="move-point"></div>
         </div>
       </div>
     </div>
@@ -475,39 +473,34 @@ export default defineComponent({
 <style scoped>
 
 .chess-board-container {
-  width: 605px;
-  height: 605px;
-  background-color: #f0d9b5;
-  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4PSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIgogICAgIHZpZXdCb3g9IjAgMCA4IDgiIHNoYXBlLXJlbmRlcmluZz0iY3Jpc3BFZGdlcyI+CjxnIGlkPSJhIj4KICA8ZyBpZD0iYiI+CiAgICA8ZyBpZD0iYyI+CiAgICAgIDxnIGlkPSJkIj4KICAgICAgICA8cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBpZD0iZSIgb3BhY2l0eT0iMCIvPgogICAgICAgIDx1c2UgeD0iMSIgeT0iMSIgaHJlZj0iI2UiIHg6aHJlZj0iI2UiLz4KICAgICAgICA8cmVjdCB5PSIxIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBpZD0iZiIgb3BhY2l0eT0iMC4yIi8+CiAgICAgICAgPHVzZSB4PSIxIiB5PSItMSIgaHJlZj0iI2YiIHg6aHJlZj0iI2YiLz4KICAgICAgPC9nPgogICAgICA8dXNlIHg9IjIiIGhyZWY9IiNkIiB4OmhyZWY9IiNkIi8+CiAgICA8L2c+CiAgICA8dXNlIHg9IjQiIGhyZWY9IiNjIiB4OmhyZWY9IiNjIi8+CiAgPC9nPgogIDx1c2UgeT0iMiIgaHJlZj0iI2IiIHg6aHJlZj0iI2IiLz4KPC9nPgo8dXNlIHk9IjQiIGhyZWY9IiNhIiB4OmhyZWY9IiNhIi8+Cjwvc3ZnPg==');
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background: var(--white-color);
-  border-radius: 15px;
-  padding-top: 20px;
-  padding-right: 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
+  --label-size: clamp(14px, 1.8vw, 20px);
 
-.board-with-rows {
-  display: flex;
-  align-items: center;
+  width: 100%;
+  max-width: 605px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: var(--label-size) 1fr var(--label-size);
+  grid-template-rows: var(--label-size) 1fr var(--label-size);
+  grid-template-areas:
+    ".     .      ."
+    "rows  board  ."
+    ".     cols   .";
+  gap: clamp(2px, 0.4vw, 4px);
+  background: var(--white-color);
+  border-radius: clamp(6px, 1vw, 10px);
+  padding: clamp(4px, 0.8vw, 8px);
+  box-shadow: 0 clamp(3px, 1vw, 8px) clamp(8px, 2.5vw, 24px) rgba(0, 0, 0, 0.15);
 }
 
 .row-labels {
+  grid-area: rows;
   display: grid;
-  grid-template-rows: repeat(8, 69px);
+  grid-template-rows: repeat(8, 1fr);
   color: var(--black-color);
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 15px;
+  font-size: clamp(10px, 1.6vw, 15px);
   font-weight: 600;
-  margin-right: 12px;
-  margin-top: 23px;
+  min-width: 1ch;
 }
 
 .row-label {
@@ -517,14 +510,22 @@ export default defineComponent({
 }
 
 .chess-board {
+  grid-area: board;
   display: grid;
-  grid-template-columns: repeat(8, 69px);
-  grid-template-rows: repeat(8, 69px);
-  border: 3px solid var(--black-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: clamp(1px, 0.4vw, 3px) solid var(--black-color);
+  box-sizing: border-box;
+  box-shadow: 0 clamp(2px, 0.6vw, 4px) clamp(4px, 1.5vw, 12px) rgba(0, 0, 0, 0.2);
   border-radius: 2px;
   overflow: hidden;
   animation: board-appear 0.3s ease-out;
+}
+
+.row {
+  display: contents;
 }
 
 @keyframes board-appear {
@@ -539,8 +540,8 @@ export default defineComponent({
 }
 
 .square {
-  width: 69px;
-  height: 69px;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -585,10 +586,10 @@ export default defineComponent({
 }
 
 .column-labels {
+  grid-area: cols;
   display: grid;
-  grid-template-columns: repeat(8, 69px);
-  padding: 10px;
-  margin: -10px;
+  grid-template-columns: repeat(8, 1fr);
+  width: 100%;
 }
 
 .column-label {
@@ -597,8 +598,9 @@ export default defineComponent({
   align-items: center;
   color: var(--black-color);
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 15px;
+  font-size: clamp(10px, 1.6vw, 15px);
   font-weight: 600;
+  min-height: 1.4em;
 }
 
 .selected {
@@ -631,8 +633,8 @@ export default defineComponent({
 }
 
 .move-point {
-  width: 20px;
-  height: 20px;
+  width: 30%;
+  height: 30%;
   background-color: rgba(0, 0, 0, 0.25);
   border-radius: 50%;
   position: absolute;
