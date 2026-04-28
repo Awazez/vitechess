@@ -1,18 +1,4 @@
 <template>
-  <!-- Message pour mobile -->
-  <div class="mobile-message">
-    <div class="mobile-content">
-      <img :src="isDarkMode ? '/src/assets/logo/logo-dark.svg' : '/src/assets/logo/logo-light.svg'" alt="Vitechess" class="mobile-logo" />
-      <h1>Vitechess est optimisé pour les écrans larges</h1>
-      <p>Pour une expérience d'apprentissage optimale, nous recommandons d'utiliser un ordinateur ou une tablette en mode paysage.</p>
-      <div class="mobile-features">
-        <p>✨ Interface complète des échecs</p>
-        <p>🎯 Modules d'apprentissage interactifs</p>
-        <p>♟️ Plateau d'échecs haute résolution</p>
-      </div>
-    </div>
-  </div>
-
   <div class="container">
     <!-- Logo et titre en haut à gauche -->
     <div class="header-logo">
@@ -874,62 +860,6 @@ setTimeout(() => {
 </script>
 
 <style>
-/* Message pour mobile */
-.mobile-message {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: var(--bg-primary);
-  z-index: 9999;
-  justify-content: center;
-  align-items: center;
-}
-
-.mobile-content {
-  text-align: center;
-  padding: 20px;
-  max-width: 400px;
-}
-
-.mobile-logo {
-  width: 150px;
-  height: 50px;
-  object-fit: contain;
-  margin-bottom: 20px;
-}
-
-.mobile-content h1 {
-  font-size: 24px;
-  color: var(--text-color);
-  margin-bottom: 15px;
-}
-
-.mobile-content p {
-  font-size: 16px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.mobile-features {
-  margin-top: 25px;
-  padding: 20px;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
-
-.mobile-features p {
-  margin: 8px 0;
-  font-size: 14px;
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 /* Header avec logo et titre */
 .header-logo {
   position: fixed;
@@ -958,14 +888,61 @@ setTimeout(() => {
   margin-left: -35px;
 }
 
-/* Media queries pour responsive */
+/* Navbar responsive */
 @media (max-width: 768px) {
-  .mobile-message {
-    display: flex;
+  .header-logo {
+    top: 10px;
   }
-  
-  .container {
+  .logo {
+    width: 90px;
+    height: 32px;
+  }
+  .app-name {
+    font-size: 18px;
+    margin-left: -30px;
+  }
+  .theme-toggle-btn,
+  .language-toggle-btn,
+  .piece-selector-btn {
+    top: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  .theme-toggle-btn { right: 8px; }
+  .language-toggle-btn { right: 52px; }
+  .piece-selector-btn { right: 96px; }
+  .piece-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-logo {
+    top: 8px;
+  }
+  .logo {
+    width: 70px;
+    height: 26px;
+  }
+  .app-name {
     display: none;
+  }
+  .theme-toggle-btn,
+  .language-toggle-btn,
+  .piece-selector-btn {
+    top: 8px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  .theme-toggle-btn { right: 6px; }
+  .language-toggle-btn { right: 44px; }
+  .piece-selector-btn { right: 82px; }
+  .piece-icon {
+    width: 16px;
+    height: 16px;
   }
 }
 
